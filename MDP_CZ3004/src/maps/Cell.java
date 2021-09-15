@@ -11,16 +11,17 @@ public class Cell {
 	 * 3: South
 	 * 4: West
 	 */
-	private char image_id;
-	private boolean is_obstacle;
-	private boolean is_explored;
+	private char image_id = MapConstants.UNIDENTIFED_CHAR;
+	private boolean isFound;
+	private boolean isObstacle;
 	private boolean isVirtualWall;
 	
 	public Cell(int row, int col) {
 		this.col = col;
 		this.row = row;
 		this.image_side = 0;
-		this.is_obstacle = false;
+		this.isObstacle = false;
+		this.isFound = false;
 	}
 	
 	public int getRow() {
@@ -36,12 +37,9 @@ public class Cell {
 	}
 	
 	public boolean getIsObstacle() {
-		return this.is_obstacle;
+		return this.isObstacle;
 	}
 	
-	public boolean getIsExplored() {
-		return this.is_explored;
-	}
 	
 	public int getImageSide() {
 		return this.image_side;
@@ -51,16 +49,16 @@ public class Cell {
         return this.isVirtualWall;
     }
 	
+	public boolean getisFound() {
+		return this.isFound;
+	}
+	
 	public void setIsObstacled(boolean obstacle) {
-		this.is_obstacle = obstacle;
+		this.isObstacle = obstacle;
 	}
 	
 	public void setImageSide(int side) {
 		this.image_side = side;
-	}
-	
-	public void setIsExplored(boolean explored) {
-		this.is_explored = explored;
 	}
 	
 	public void setImageId(char id) {
@@ -76,4 +74,16 @@ public class Cell {
             }
         }
     }
+	
+	public void setIsFound(boolean isFound) {
+		this.isFound = isFound;
+	}
+	
+	public void printInfo() {
+		if (isObstacle) {
+			System.out.println("(" + row + ", " + col + "), image_side: " + image_side + ", image_id: " + image_id);
+		} else {
+			
+		}
+	}
 }

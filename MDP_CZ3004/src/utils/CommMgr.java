@@ -7,17 +7,10 @@ import java.net.UnknownHostException;
 public class CommMgr {
 	
 		// Android --> PC : waypoint in the format of row +" "+ col  eg. "wp3,5"
-	public static final String EX_START = "EX_START";       // Android --> PC : receive "EX_START" from Android to start exploration
-	public static final String FP_START = "FP_START";       // Android --> PC : receive "FP_START" from Android to send fastest path
+	public static final String toSTM = "ALG|STM|";
+	public static final String toAndroid = "ALG|AND|";
+	public static final String toRPI = "ALG|RPI|TP";
 	
-	public static final String MAP_STRINGS = "MAP";         // PC --> Android : send "md"+P1+P2+robot(row+column+direction) to Android 
-						  //eg. ret: a list of 2 strings of hexidecimal numbers, mapStrings[0] = P1, mapStrings[1] = P2, "3,5,UP"
-	public static final String BOT_POS = "BOT_POS";         // PC --> Android : send "E" to Android to signal exploration has finished & P1,P2 are sent over  
-	    				  //send robotG row,column,direciton eg. "3,5,UP"
-	public static final String BOT_START = "BOT_START";     // PC --> Arduino : (no use)send null (type BOT_START) to Arduino to start the bot
-	public static final String INSTRUCTIONS = "INSTR";      // PC --> Arduino : during fastest path - send the whole fastest path movement (fpinstructions) to Arduino eg. "fpath"+"fbrlce"+"z" 
-	public static final String SENSOR_DATA = "SDATA";       // Arduino --> PC : receive sensor data from Arduino eg. "pc:obs:5|0|2|1|2|1|msgcount0"
-
 	
 	private static CommMgr commMgr = null;
     private static Socket conn = null;
@@ -82,21 +75,21 @@ public class CommMgr {
         }
     }
 
-    public void sendMsg(String msg, String msgType) {
+    public void sendMsg(String msg, String destination) {
         System.out.println("Sending a message...");
 
         try {
-            String outputMsg;
+            String outputMsg = "";
             if (msg == null) {
-                outputMsg = msgType + "\n";												 
+                outputMsg = destination + "\n";												 
             } 
             else {
-                outputMsg = msg;													
+                outputMsg = destination + msg + "\n";													
             }
 
             System.out.println("Sending out message:\n" + outputMsg);
             writer.write(outputMsg);
-            writer.flush();
+            writer.flush(); // send message
         } catch (IOException e) {
             System.out.println("sendMsg() --> IOException");
         } catch (Exception e) {
@@ -114,8 +107,10 @@ public class CommMgr {
 
             if (input != null && input.length() > 0) {
                 sb.append(input);
-                System.out.println(sb.toString());
-                return sb.toString();
+                String msg= sb.toString();
+                // parts: SOURCE | DESTINATION | MESSAGE
+                System.out.println("Message: " + msg);
+                return msg;
             }
         } catch (IOException e) {
             System.out.println("recvMsg() --> IOException");

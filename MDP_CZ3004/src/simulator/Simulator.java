@@ -15,7 +15,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import static utils.MapDescriptor.generateMapDescriptor;
 import static utils.MapDescriptor.loadMapFromDisk;
 
 /**
@@ -30,8 +29,7 @@ public class Simulator {
 
     private static Robot bot;
 
-    private static Map realMap = null;              // real map
-    private static Map exploredMap = null;          // exploration map
+    private static Map map = null;
 
     private static int speedLimit = robot.RobotConstants.SPEED;				// speed limit
     private static int timeLimit = 4000;            // time limit
@@ -46,9 +44,6 @@ public class Simulator {
      * Initialize the different maps and displays the application.
      */
     public static void main(String[] args) {
-        if (realRun) {
-            comm.openConnection();
-        } 
 
         int start_row = RobotConstants.START_ROW;
         int start_col = RobotConstants.START_COL;
@@ -56,12 +51,8 @@ public class Simulator {
         bot = new Robot(start_row, start_col, realRun);
 
         if (!realRun) {
-            realMap = new Map(bot);
-            realMap.setAllUnexplored();
+        	map = new Map(bot);
         }
-
-        exploredMap = new Map(bot);
-        exploredMap.setAllUnexplored();
 
         displayEverything();
     }
@@ -74,7 +65,7 @@ public class Simulator {
     	// Initialize main frame for display
         _appFrame = new JFrame();
         _appFrame.setTitle("MDP Simulator");
-        _appFrame.setSize(new Dimension(850, 700));
+        _appFrame.setSize(new Dimension(900, 750));
         _appFrame.setResizable(false);
 
         // Center the main frame in the middle of the screen
@@ -109,24 +100,21 @@ public class Simulator {
      * by default.
      */
     private static void initMainLayout() {
-        if (!realRun) {
-            _mapCards.add(realMap, "REAL_MAP");
-        }
-        _mapCards.add(exploredMap, "EXPLORATION");
+        _mapCards.add(map, "EXPLORATION");
 
         CardLayout cl = ((CardLayout) _mapCards.getLayout());
-        if (!realRun) {
-            cl.show(_mapCards, "REAL_MAP");
-        } else {
-            cl.show(_mapCards, "EXPLORATION");
-        }
+        cl.show(_mapCards, "EXPLORATION");
     }
 
     /**
      * Initialize the JPanel for the buttons.
      */
     private static void initButtonsLayout() {
-        _buttons.setLayout(new GridLayout());
+        _buttons.setLayout(new GridLayout(2,6));
+        /*
+         * LoadMap	|| Reset position	|| Cells to arrive	|| Hamiltonian Path	|| Fastest Path	|| Connect RPI
+         * Forward	|| Backward			|| Left Forward		|| Right Forward	|| Left Backward|| Right Backward
+         */
         addButtons();
     }
 
@@ -143,338 +131,176 @@ public class Simulator {
      * (for user input) for the different functions of the buttons.
      */
     private static void addButtons() {
-        if (!realRun) {
-            // Load Map Button
-            JButton btn_LoadMap = new JButton("Load Map");
-            formatButton(btn_LoadMap);
-            btn_LoadMap.addMouseListener(new MouseAdapter() {
-                public void mousePressed(MouseEvent e) {
-                    JDialog loadMapDialog = new JDialog(_appFrame, "Load Map", true);
-                    loadMapDialog.setSize(400, 100);
-                    loadMapDialog.setLayout(new FlowLayout());
-
-                    final JTextField loadTF = new JTextField(15);
-                    JButton loadMapButton = new JButton("Load");
-
-                    loadMapButton.addMouseListener(new MouseAdapter() {
-                        public void mousePressed(MouseEvent e) {
-                            loadMapDialog.setVisible(false);
-                            loadMapFromDisk(realMap, loadTF.getText());
-                            CardLayout cl = ((CardLayout) _mapCards.getLayout());
-                            cl.show(_mapCards, "REAL_MAP");
-                            realMap.repaint();
-                            System.out.println("Map printed!");
-                        }
-                    });
-
-                    loadMapDialog.add(new JLabel("File Name: "));
-                    loadMapDialog.add(loadTF);
-                    loadMapDialog.add(loadMapButton);
-                    loadMapDialog.setVisible(true);
-                }
-            });
-            _buttons.add(btn_LoadMap);
-            
-        }
-        
-        /*
-
-        // FastestPath Class for Multithreading
-        class FastestPath extends SwingWorker<Integer, String> {
-            protected Integer doInBackground() throws Exception {
-                bot.setRobotPos(RobotConstants.START_ROW, RobotConstants.START_COL);
-                exploredMap.repaint();
-                
-                
-                FastestPath fastestPathToWayPoint;
-                fastestPathToWayPoint = new FastestPath(exploredMap, bot);
-                String fp1 = fastestPathToWayPoint.runFastestPath(fpRow,fpCol);
-                bot.setRobotPos(fpRow,fpCol);
-
-                System.out.println("B4 goal: "+bot.getRow()+ ", "+bot.getCol());
-                FastestPath fastestPathToGoal;
-                fastestPathToGoal = new FastestPath(exploredMap, bot);
-                // String fp2 = fastestPathToGoal.runFastestPath(RobotConstants.GOAL_ROW, RobotConstants.GOAL_COL);
-                String fpInstructions="";
-                if(Character.isUpperCase(fp1.charAt(fp1.length()-1)) && Character.isUpperCase(fp2.charAt(0))){
-                    char c = (char)(fp1.charAt(fp1.length()-1)+fp2.charAt(0)-64);
-                    fpInstructions = fpInstructions + fp1.substring(0,fp1.length()-1) + c + fp2.substring(1);
-                }   
-                else
-                {
-                    fpInstructions= fpInstructions+fp1+fp2;
-                }
-                
-                System.out.println("Just finished finding fpInstructions:"+fpInstructions);
-                if (realRun) {
-                	System.out.println("GOING INTO THE while loop");
-                     while (true) {
-                         System.out.println("Waiting for FP_START...");
-                         String msg = comm.recvMsg();
-                         if (msg.equals(CommMgr.FP_START)) break;
-                     }
-                    fpInstructions = "fpath" + fpInstructions + "z";
-                }
-                //send fpinstructions to rpi
-                CommMgr.getCommMgr().sendMsg(fpInstructions.toString(), CommMgr.INSTRUCTIONS);   
-                
-                ///////////////////////////////////////////////////////////////////////////////////////
-                // bot (1,1)
-                bot.setRobotPos(1,1);
-                exploredMap.repaint();
-                
-                bot.setRobotDir(DIRECTION.UP);
-                exploredMap.repaint();
-                
-                String movementUpper = fp1 + fp2;
-                String movements = new String();
-                for (int i=0;i<(movementUpper.length());i++) {
-                	if (movementUpper.charAt(i)>64 && movementUpper.charAt(i)<= 90) {
-                		int count=movementUpper.charAt(i)-64;
-                		for (int j=0;j<count;j++) {
-                			movements=movements + 'f';
-                		}
-                	}
-                	else{
-                		movements=movements + movementUpper.charAt(i);
-                	}
-                }
-                
-                
-                for (int i=0;i<(movements.length());i++) {
-                	
-                	switch (movements.charAt(i)) {
-                    	case 'f':	// forward
-                    		switch (bot.getDirection()) {
-	                        	case 1: 	// UP
-		                            bot.setRobotPos(bot.getRow()+1,bot.getCol());
-		                            break;
-	                        	case 2:		// DOWN
-		                            bot.setRobotPos(bot.getRow()-1,bot.getCol());
-		                            break;
-	                        	case 3:		// TURN LEFT
-		                            bot.setRobotPos(bot.getRow(),bot.getCol()-1);
-		                            break;
-	                        	case 4:		// TURN RIGHT
-		                            bot.setRobotPos(bot.getRow(),bot.getCol()+1);
-		                            break;
-	                        	default:
-	                        		break;
-                    		}
-	                         break;
-	                         
-	                    case 'r': 	// turn right
-	                    	 bot.setDirection( (bot.getDirection() + 1) % 4 );
-	                    	 break;
-	                    	 
-	                    case 'l':	// turn left
-	                    	 bot.setDirection( (bot.getDirection() - 1) % 4 );
-	                         break;
-	                    
-	                    default:
-	                         System.out.println("Error in Robot.move()!");
-	                         break;
-                 }
-                	System.out.println("FP Move: " + movements.charAt(i));
-                	
-                	exploredMap.repaint();	
-                }
-                
-                return 222;
-            }
-        }
-
-        // Exploration Class for Multithreading
-        class Exploration extends SwingWorker<Integer, String> {
-            protected Integer doInBackground() throws Exception {
-                int row, col;
-
-                row = RobotConstants.START_ROW;
-                col = RobotConstants.START_COL;
-
-                bot.setRobotPos(row, col);
-                exploredMap.repaint();
-
-                ExplorationAlgo exploration;
-                exploration = new ExplorationAlgo(exploredMap, realMap, bot, coverageLimit, timeLimit);
-                
-                exploration.runExploration();
-            	System.out.println("Just finished exploration.runExploration(); WE ARE GONNA RUN generateMapDescriptor(exploredMap);");
-                generateMapDescriptor(exploredMap);
-                System.out.println("Just finished generateMapDescriptor(exploredMap);");
-
-                if (realRun) {
-                	System.out.println("WE ARE GONNA RUN FastestPath().execute();");
-                	DIRECTION direction = bot.getrobotDir();
-                	if (direction == DIRECTION.LEFT) 
-                    	bot.move(MOVEMENT.TURNR, true);
-                		
-                	else if (direction == DIRECTION.RIGHT)
-                    	bot.move(MOVEMENT.TURNL, true);
-                	else if (direction == DIRECTION.DOWN) 
-                		{
-                		bot.move(MOVEMENT.TURNR, true);
-                    	bot.move(MOVEMENT.TURNR, true);
-                    	}
-                        		
-                    new FastestPath().execute();
-                }
-
-                return 111;
-            }
-        }
-
-        // Exploration Button
-        JButton btn_Exploration = new JButton("Exploration");
-        formatButton(btn_Exploration);
-        btn_Exploration.addMouseListener(new MouseAdapter() {
+        // Load Map Button
+        JButton btn_LoadMap = new JButton("Load Map");
+        formatButton(btn_LoadMap);
+        btn_LoadMap.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-            	
-            	if (!realRun){
-	            	JDialog speedExploDialog = new JDialog(_appFrame, "Set-Speed Exploration", true);
-	            	speedExploDialog.setSize(400, 60);
-	            	speedExploDialog.setLayout(new FlowLayout());
-	                final JTextField speedTF = new JTextField(5);
-	                JButton speedSaveButton = new JButton("Run");
-	            	
-	                speedSaveButton.addMouseListener(new MouseAdapter() {
-	                    public void mousePressed(MouseEvent e) {
-	                    	
-		                    	speedExploDialog.setVisible(false);
-		                        speedLimit = (int) (1000.0/(Integer.parseInt(speedTF.getText())));
-		                        bot.setSpeed(speedLimit);
-		                        System.out.println("Speed Limit:"+speedLimit);
-	                    
-	                        CardLayout cl = ((CardLayout) _mapCards.getLayout());
-	                        cl.show(_mapCards, "EXPLORATION");
-	                        new Exploration().execute();
-	                    }
-	                });
-	            	
-	
-	                speedExploDialog.add(new JLabel("Set Speed (grids per second): "));
-	                speedExploDialog.add(speedTF);
-	                speedExploDialog.add(speedSaveButton);
-	                speedExploDialog.setVisible(true);
-	            	
-            	} else {
-            		CardLayout cl = ((CardLayout) _mapCards.getLayout());
-                    cl.show(_mapCards, "EXPLORATION");
-                    new Exploration().execute();
-            	}
+                JDialog loadMapDialog = new JDialog(_appFrame, "Load Map", true);
+                loadMapDialog.setSize(400, 100);
+                loadMapDialog.setLayout(new FlowLayout());
+
+                final JTextField loadTF = new JTextField(15);
+                JButton loadMapButton = new JButton("Load");
+
+                loadMapButton.addMouseListener(new MouseAdapter() {
+                    public void mousePressed(MouseEvent e) {
+                        loadMapDialog.setVisible(false);
+                        loadMapFromDisk(map, loadTF.getText());
+                        CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                        cl.show(_mapCards, "REAL_MAP");
+                        map.repaint();
+                    }
+                });
+
+                loadMapDialog.add(new JLabel("File Name: "));
+                loadMapDialog.add(loadTF);
+                loadMapDialog.add(loadMapButton);
+                loadMapDialog.setVisible(true);
             }
         });
-        _buttons.add(btn_Exploration);
-
+        _buttons.add(btn_LoadMap);
         
-        // Fastest Path Button
-        JButton btn_FastestPath = new JButton("Fastest Path");
+        // Reset Position
+        JButton btn_ResetPosition = new JButton("Reset position");
+        formatButton(btn_ResetPosition);
+        btn_ResetPosition.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                bot.setRobotPos(1, 1);
+                bot.setDirection(1);
+                map.repaint();
+                System.out.println("Reset Position to (1,1), facing North");
+                
+            }
+        });
+        _buttons.add(btn_ResetPosition);
+        
+        // Cells to arrive
+        JButton btn_CellsToArrive = new JButton("Cells to arrive");
+        formatButton(btn_CellsToArrive);
+        btn_CellsToArrive.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                map.findCellsToArrive();
+                map.repaint();
+            }
+        });
+        _buttons.add(btn_CellsToArrive);
+        
+        // Hamiltonian Path
+        JButton btn_HamiltonianPath = new JButton("Hamiltonian path");
+        formatButton(btn_HamiltonianPath);
+        btn_HamiltonianPath.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+            	// map.repaint();
+                System.out.println("Hamiltonian path started");
+            }
+        });
+        _buttons.add(btn_HamiltonianPath);
+        
+        // Fastest Path
+        JButton btn_FastestPath = new JButton("Fastest path");
         formatButton(btn_FastestPath);
         btn_FastestPath.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                CardLayout cl = ((CardLayout) _mapCards.getLayout());
-                cl.show(_mapCards, "EXPLORATION");
-                new FastestPath().execute();
+            	map.repaint();
+                System.out.println("Fastest path started");
             }
         });
         _buttons.add(btn_FastestPath);
         
-        
-
-
-        // TimeExploration Class for Multithreading
-        class TimeExploration extends SwingWorker<Integer, String> {
-            protected Integer doInBackground() throws Exception {
-                bot.setRobotPos(RobotConstants.START_ROW, RobotConstants.START_COL);
-                exploredMap.repaint();
-
-                ExploreMap timeExplo = new ExploreMap(exploredMap, realMap, bot, coverageLimit, timeLimit);
-                timeExplo.runExploration();
-
-                generateMapDescriptor(exploredMap);
-
-                return 333;
-            }
-        }
-        
-        
-
-        // Time-limited Exploration Button
-        JButton btn_TimeExploration = new JButton("Time-Limited");
-        formatButton(btn_TimeExploration);
-        btn_TimeExploration.addMouseListener(new MouseAdapter() {
+        // Connect RPI
+        JButton btn_ConnectRPI= new JButton("Connect RPI");
+        formatButton(btn_ConnectRPI);
+        btn_ConnectRPI.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                JDialog timeExploDialog = new JDialog(_appFrame, "Time-Limited Exploration", true);
-                timeExploDialog.setSize(400, 60);
-                timeExploDialog.setLayout(new FlowLayout());
-                final JTextField timeTF = new JTextField(5);
-                JButton timeSaveButton = new JButton("Run");
-
-                timeSaveButton.addMouseListener(new MouseAdapter() {
-                    public void mousePressed(MouseEvent e) {
-                        timeExploDialog.setVisible(false);
-                        String time = timeTF.getText();
-                        String[] timeArr = time.split(":");
-                        timeLimit = (Integer.parseInt(timeArr[0]) * 60) + Integer.parseInt(timeArr[1]);
-                        CardLayout cl = ((CardLayout) _mapCards.getLayout());
-                        cl.show(_mapCards, "EXPLORATION");
-                        new TimeExploration().execute();
-                    }
-                });
-
-                timeExploDialog.add(new JLabel("Time Limit (in MM:SS): "));
-                timeExploDialog.add(timeTF);
-                timeExploDialog.add(timeSaveButton);
-                timeExploDialog.setVisible(true);
+            	comm.openConnection();
             }
         });
-        _buttons.add(btn_TimeExploration);
-
-
-        // CoverageExploration Class for Multithreading
-        class CoverageExploration extends SwingWorker<Integer, String> {
-            protected Integer doInBackground() throws Exception {
-                bot.setRobotPos(RobotConstants.START_ROW, RobotConstants.START_COL);
-                exploredMap.repaint();
-
-                ExploreMap coverageExplo = new ExploreMap(exploredMap, realMap, bot, coverageLimit, timeLimit);
-                coverageExplo.runExploration();
-
-                generateMapDescriptor(exploredMap);
-
-                return 444;
-            }
-        }
-
-        // Coverage-limited Exploration Button
-        JButton btn_CoverageExploration = new JButton("Coverage-Limited");
-        formatButton(btn_CoverageExploration);
-        btn_CoverageExploration.addMouseListener(new MouseAdapter() {
+        _buttons.add(btn_ConnectRPI);
+        
+        // Move Forward Button
+        JButton btn_Forward = new JButton("Forward");
+        formatButton(btn_Forward);
+        btn_Forward.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                JDialog coverageExploDialog = new JDialog(_appFrame, "Coverage-Limited Exploration", true);
-                coverageExploDialog.setSize(400, 60);
-                coverageExploDialog.setLayout(new FlowLayout());
-                final JTextField coverageTF = new JTextField(5);
-                JButton coverageSaveButton = new JButton("Run");
-
-                coverageSaveButton.addMouseListener(new MouseAdapter() {
-                    public void mousePressed(MouseEvent e) {
-                        coverageExploDialog.setVisible(false);
-                        coverageLimit = (int) ((Integer.parseInt(coverageTF.getText())) * MapConstants.MAP_SIZE / 100.0);
-                        new CoverageExploration().execute();
-                        CardLayout cl = ((CardLayout) _mapCards.getLayout());
-                        cl.show(_mapCards, "EXPLORATION");
-                    }
-                });
-
-                coverageExploDialog.add(new JLabel("Coverage Limit (% of maze): "));
-                coverageExploDialog.add(coverageTF);
-                coverageExploDialog.add(coverageSaveButton);
-                coverageExploDialog.setVisible(true);
+                map.moveRobotForward(1);
+                CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                cl.show(_mapCards, "REAL_MAP");
+                map.repaint();
             }
         });
-        _buttons.add(btn_CoverageExploration);
+        _buttons.add(btn_Forward);
         
-        */
+        // Move Backward Button
+        JButton btn_Backward = new JButton("Backward");
+        formatButton(btn_Backward);
+        btn_Backward.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                map.moveRobotBackward(1);
+                CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                cl.show(_mapCards, "REAL_MAP");
+                map.repaint();
+            }
+        });
+        _buttons.add(btn_Backward);
+        
+        // Move Left Forward Button
+        JButton btn_LeftForward = new JButton("Left F");
+        formatButton(btn_LeftForward);
+        btn_LeftForward.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                map.moveRobotLeftF();
+                CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                cl.show(_mapCards, "REAL_MAP");
+                map.repaint();
+            }
+        });
+        _buttons.add(btn_LeftForward);
+        
+        
+        // Move Right Forward Button
+        JButton btn_RightForward = new JButton("Right F");
+        formatButton(btn_RightForward);
+        btn_RightForward.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                map.moveRobotRightF();
+                CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                cl.show(_mapCards, "REAL_MAP");
+                map.repaint();
+                //System.out.println("Map printed!");
+            }
+        });
+        _buttons.add(btn_RightForward);
+        
+        
+        // Left Backward
+        JButton btn_LeftBackward = new JButton("Left B");
+        formatButton(btn_LeftBackward);
+        btn_LeftBackward.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+            	map.moveRobotLeftB();
+            	CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                cl.show(_mapCards, "REAL_MAP");
+            	map.repaint();
+                //System.out.println("LeftBackward");
+                
+            }
+        });
+        _buttons.add(btn_LeftBackward);
+        
+        // Right Backward
+        JButton btn_RightBackward = new JButton("Right B");
+        formatButton(btn_RightBackward);
+        btn_RightBackward.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+            	map.moveRobotRightB();
+            	CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                cl.show(_mapCards, "REAL_MAP");
+            	map.repaint();
+                //System.out.println("RightBackward");
+                
+            }
+        });
+        _buttons.add(btn_RightBackward);
     }
 }
