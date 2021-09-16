@@ -24,8 +24,8 @@ public class Map extends JPanel{
 	// facing_direction is the direction should be faced to image
 	// 1 cell can recognize multiple images if robot rotates
 	// so we have 1 more number to control the number of cellToArrive
-	private int[][] cellsToArrive = new int[MapConstants.NUM_OBSTACLE][3];
-	private boolean isDrawCellsToArrive = false;
+	private double[][] positionToArrive = new double[MapConstants.NUM_OBSTACLE][3];
+	private boolean isDrawPositionToArrive = false;
 	
 	public Map(Robot bot) {
 		this.bot = bot;
@@ -48,42 +48,58 @@ public class Map extends JPanel{
 	/**
      * Returns true if the row and column values are in the start zone.
      */
-    private boolean inStartZone(int row, int col) {
+    private boolean inStartZone(float row, float col) {
         return row >= 0 && row <= 3 && col >= 0 && col <= 3;
     }
     
     /**
      * Returns true if the row and column values are valid.
      */
-    public boolean checkValidCoordinates(int row, int col) {
+    public boolean checkValidCoordinates(double row, double col) {
         return row >= 0 && col >= 0 && row < MapConstants.MAP_ROW && col < MapConstants.MAP_COL;
     }
     
     /**
      * Returns true if the given cell is out of bounds or an obstacle.
      */
-    public boolean getIsObstacleOrWall(int row, int col) {
-        return !checkValidCoordinates(row, col) || getCell(row, col).getIsObstacle();
+    public boolean getIsObstacleOrWall(double row, double col) {
+    	int rcell = (int) Math.floor(row);
+    	int ccell = (int) Math.floor(col);
+        return !checkValidCoordinates(row, col) || getCell(rcell, ccell).getIsObstacle();
     }
     
-    public boolean isFree(int row, int col) {
-    	return checkValidCoordinates(row, col) && !getCell(row, col).getIsObstacle();
+    public boolean isFree(double row, double col) {
+    	int rcell = (int) Math.floor(row);
+    	int ccell = (int) Math.floor(col);
+    	return checkValidCoordinates(row, col) && !getCell(rcell, ccell).getIsObstacle();
     }
     
-    public int[] getCellsToArrive(int index) {
-    	return this.cellsToArrive[index];
+    public boolean checkValidRobotCenter(double r, double c) {
+		boolean inArena = (1<=r) && (r<=MapConstants.MAP_ROW-2) && (1<=c) && (c<=MapConstants.MAP_COL-2);
+		boolean noObstacleNearby = 	isFree(r+1,c-1) && isFree(r+1,c  ) && isFree(r+1,c+1) &&
+									isFree(r  ,c-1) 				   && isFree(r  ,c+1) &&
+									isFree(r-1,c-1) && isFree(r-1,c  ) && isFree(r-1,c+1);
+		return inArena && noObstacleNearby;
+	}
+    
+    public double[] getPositionToArrive(int index) {
+    	return this.positionToArrive[index];
     }
     
-    public boolean getIsDrawCellsToArrive() {
-    	return isDrawCellsToArrive;
+    public boolean getIsDrawpositionToArrive() {
+    	return isDrawPositionToArrive;
     }
     
-    public Cell getCell(int row, int col) {
-    	return grid[row][col];
+    public Cell getCell(double row, double col) {
+    	int rcell = (int) Math.floor(row);
+    	int ccell = (int) Math.floor(col);
+    	return grid[rcell][ccell];
     }
     
-    public boolean isObstacleCell(int row, int col) {
-        return grid[row][col].getIsObstacle();
+    public boolean isObstacleCell(double row, double col) {
+    	int rcell = (int) Math.floor(row);
+    	int ccell = (int) Math.floor(col);
+        return grid[rcell][ccell].getIsObstacle();
     }
     
     public Cell[] getObstacles() {
@@ -102,8 +118,8 @@ public class Map extends JPanel{
     	grid[row][col].setImageId(image_id);
     }
     
-    public void setIsDrawCellsToArrive(boolean draw) {
-    	this.isDrawCellsToArrive = draw;
+    public void setIsDrawPositionToArrive(boolean draw) {
+    	this.isDrawPositionToArrive = draw;
     }
     
     public void addNewImage(int row, int col, int image_side, char image_id) {
@@ -133,16 +149,16 @@ public class Map extends JPanel{
      * then the robot should be at (8, 7) and facing "south"
      *
      */
-    public void findCellsToArrive() {
+    public void findPositionToArrive() {
     	printObstacle();
     	for (int i=0; i<MapConstants.NUM_OBSTACLE; i++) {
     		
     		int image_side = obstacles[i].getImageSide();
-    		int r = obstacles[i].getRow();
-    		int c = obstacles[i].getCol();
+    		double r = obstacles[i].getRow();
+    		double c = obstacles[i].getCol();
     		
-    		int cellToArriveRow = -1;
-    		int cellToArriveCol = -1;
+    		double cellToArriveRow = -1;
+    		double cellToArriveCol = -1;
     		int cellToArriveDirection = 0;
     		
     		switch (image_side) {
@@ -182,14 +198,14 @@ public class Map extends JPanel{
     		
     		// add new cell
     		// check valid
-    		if (bot.checkValidRobotCenter(cellToArriveRow, cellToArriveCol)) {
-    			cellsToArrive[i][0] = cellToArriveRow;
-				cellsToArrive[i][1] = cellToArriveCol;
-				cellsToArrive[i][2] = cellToArriveDirection;
+    		if (checkValidRobotCenter(cellToArriveRow, cellToArriveCol)) {
+    			positionToArrive[i][0] = cellToArriveRow;
+				positionToArrive[i][1] = cellToArriveCol;
+				positionToArrive[i][2] = cellToArriveDirection;
 				System.out.println("Add new cells to arrive: (" + cellToArriveRow + ", " + cellToArriveCol + ")");
     		}
     	}
-    	isDrawCellsToArrive = true;
+    	isDrawPositionToArrive = true;
     }
     
     /*
@@ -197,20 +213,18 @@ public class Map extends JPanel{
      * Robot will execute them without the need to check anything
      */
     
-    public void moveRobotForward(int d) {
-    	int rd = bot.getRow();
-    	int cd = bot.getCol();
+    public void moveRobotForward(double d) {
+    	double rd = bot.getRow();
+    	double cd = bot.getCol();
     	// check if robot can move forward d consecutive steps
-    	for (int i=0; i<d; i++) {
-    		int[] arr = checkForwardAvailable(rd, cd);
-    		if (arr[0] == 1) {
-    			rd = arr[1];
-    			cd = arr[2];
-    		} else {
-    			System.out.println("Can't move forward by " + d + " step(s)");
-    			return;
-    		}
-    	}
+		double[] arr = checkForwardAvailable(d);
+		if (arr[0] == 1) {
+			rd = arr[1];
+			cd = arr[2];
+		} else {
+			System.out.println("Can't move forward by " + d + "cm");
+			return;
+		}
     	bot.setRobotPos(rd, cd);
     	if (bot.getRealBot()) {
 			// send message to STM
@@ -219,24 +233,22 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move forward to cell (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println("Move forward to position (" + bot.getRow() + "," + bot.getCol() + ").");
 		}
     }
     
-    public void moveRobotBackward(int d) {
-    	int rd = bot.getRow();
-    	int cd = bot.getCol();
+    public void moveRobotBackward(double d) {
+    	double rd = bot.getRow();
+    	double cd = bot.getCol();
     	// check if robot can move forward d consecutive steps
-    	for (int i=0; i<d; i++) {
-    		int[] arr = checkBackwardAvailable(rd, cd);
-    		if (arr[0] == 1) {
-    			rd = arr[1];
-    			cd = arr[2];
-    		} else {
-    			System.out.println("Can't move backward by " + d + " step(s)");
-    			return;
-    		}
-    	}
+		double[] arr = checkBackwardAvailable(d);
+		if (arr[0] == 1) {
+			rd = arr[1];
+			cd = arr[2];
+		} else {
+			System.out.println("Can't move backward by " + d + "cm");
+			return;
+		}
     	bot.setRobotPos(rd, cd);
     	if (bot.getRealBot()) {
 			// send message to STM
@@ -245,16 +257,16 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move backward to cell (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println("Move backward to position (" + bot.getRow() + "," + bot.getCol() + ").");
 		}
     }
     
     
     public void moveRobotLeftF() {
-    	int rd = bot.getRow();
-    	int cd = bot.getCol();
+    	double rd = bot.getRow();
+    	double cd = bot.getCol();
     	// check if robot can move forward d consecutive steps
-		int[] arr = checkLeftForwardAvailable(rd, cd);
+		double[] arr = checkLeftForwardAvailable(rd, cd);
 		if (arr[0] == 1) {
 			rd = arr[1];
 			cd = arr[2];
@@ -273,15 +285,15 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move left forward to cell (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println("Move left forward to position (" + bot.getRow() + "," + bot.getCol() + ").");
 		}
     }
     
     public void moveRobotLeftB() {
-    	int rd = bot.getRow();
-    	int cd = bot.getCol();
+    	double rd = bot.getRow();
+    	double cd = bot.getCol();
     	// check if robot can move forward d consecutive steps
-		int[] arr = checkLeftBackwardAvailable(rd, cd);
+		double[] arr = checkLeftBackwardAvailable(rd, cd);
 		if (arr[0] == 1) {
 			rd = arr[1];
 			cd = arr[2];
@@ -300,15 +312,15 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move left backward to cell (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println("Move left backward to position (" + bot.getRow() + "," + bot.getCol() + ").");
 		}
     }
     
     public void moveRobotRightF() {
-    	int rd = bot.getRow();
-    	int cd = bot.getCol();
+    	double rd = bot.getRow();
+    	double cd = bot.getCol();
     	// check if robot can move forward d consecutive steps
-		int[] arr = checkRightForwardAvailable(rd, cd);
+		double[] arr = checkRightForwardAvailable(rd, cd);
 		if (arr[0] == 1) {
 			rd = arr[1];
 			cd = arr[2];
@@ -325,15 +337,15 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move right forward to cell (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println("Move right forward to position (" + bot.getRow() + "," + bot.getCol() + ").");
 		}
     }
     
     public void moveRobotRightB() {
-    	int rd = bot.getRow();
-    	int cd = bot.getCol();
+    	double rd = bot.getRow();
+    	double cd = bot.getCol();
     	// check if robot can move forward d consecutive steps
-		int[] arr = checkRightBackwardAvailable(rd, cd);
+		double[] arr = checkRightBackwardAvailable(rd, cd);
 		if (arr[0] == 1) {
 			rd = arr[1];
 			cd = arr[2];
@@ -351,68 +363,144 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move right backward to cell (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println("Move right backward to position (" + bot.getRow() + "," + bot.getCol() + ").");
 		}
     }
     
-    private int[] checkForwardAvailable(int r, int c) {
-    	int[] arr = {0,r,c};
+    private double[] checkForwardAvailable(double d) {
+    	double r = bot.getRow();
+    	double c = bot.getCol();
+    	double[] arr = {0,r,c};
+    	int count = 0;
     	if (bot.getDirection() == 1) {			// north
-    		if (!getIsObstacleOrWall(r+2, c-1) && (!getIsObstacleOrWall(r+2, c)) && (!getIsObstacleOrWall(r+2, c+1))) {
-    			arr[1]++;	// r++
+    		int row1 = (int) Math.floor(r) + 2;
+    		int row2 = (int) Math.floor(r+d/10) + 1;
+    		for (int i=row1; i<=row2; i++) {
+    			if (getIsObstacleOrWall(i, c-1) || getIsObstacleOrWall(i, c) || getIsObstacleOrWall(i, c+1)) {
+        			break;
+        		}
+    			count++;
+    		}
+    		if (count >= row2-row1) {
+    			arr[1] = r+d/10;
     			arr[0] = 1;
     		}
+    		
+    		
     	} else if (bot.getDirection() == 2) {	// east
-    		if (!getIsObstacleOrWall(r-1, c+2) && (!getIsObstacleOrWall(r, c+2)) && (!getIsObstacleOrWall(r+1, c+2))) {
-    			arr[2]++;	// c++
+    		int col1 = (int) Math.floor(c) + 2;
+    		int col2 = (int) Math.floor(c+d/10)+1;
+    		for (int i = col1; i<=col2; i++) {
+    			if (getIsObstacleOrWall(r+1, i) || getIsObstacleOrWall(r, i) || getIsObstacleOrWall(r-1, i)) {
+        			break;
+        		}
+    			count++;
+    		}
+    		if (count >= col2-col1) {
+    			arr[2] = c+d/10;
     			arr[0] = 1;
     		}
     	} else if (bot.getDirection() == 3) {	// south
-    		if (!getIsObstacleOrWall(r-2, c-1) && (!getIsObstacleOrWall(r-2, c)) && (!getIsObstacleOrWall(r-2, c+1))) {
-    			arr[1]--;
+    		int row1 = (int) Math.floor(r) - 2;
+    		int row2 = (int) Math.floor(r-d/10) - 1;
+    		for (int i=row1; i>=row2; i--) {
+    			if (getIsObstacleOrWall(i, c-1) || getIsObstacleOrWall(i, c) || getIsObstacleOrWall(i, c+1)) {
+        			break;
+        		}
+    			count++;
+    		}
+    		if (count >= row1-row2) {
+    			arr[1] = r-d/10;
     			arr[0] = 1;
     		}
     	} else if(bot.getDirection() == 4) {
-    		if (!getIsObstacleOrWall(r-1, c-2) && (!getIsObstacleOrWall(r, c-2)) && (!getIsObstacleOrWall(r+1, c+2))) {
-    			arr[2]--;
+    		int col1 = (int) Math.floor(c) - 2;
+    		int col2 = (int) Math.floor(c-d/10)-1;
+    		for (int i=col1; i>=col2; i--) {
+    			if (getIsObstacleOrWall(r+1, i) || getIsObstacleOrWall(r, i) || getIsObstacleOrWall(r-1, i)) {
+        			break;
+        		}
+    			count++;
+    		}
+    		if (count >= col1-col2) {
+    			arr[2] = c-d/10;
     			arr[0] = 1;
     		}
     	}
     	return arr;
     }
     
-    private int[] checkBackwardAvailable(int r, int c) {
-    	int[] arr = {0,r,c};
+    private double[] checkBackwardAvailable(double d) {
+    	double r = bot.getRow();
+    	double c = bot.getCol();
+    	double[] arr = {0,r,c};
+    	
+    	int count = 0;
     	if (bot.getDirection() == 1) {			// north
-    		if (isFree(r-2, c-1) && (isFree(r+2, c)) && (isFree(r-2, c+1))) {
-    			arr[1]--;	// r--
+    		int row1 = (int) Math.floor(r) -2;
+    		int row2 = (int) Math.floor(r-d/10) - 1;
+    		for (int i=row1; i>=row2; i--) {
+    			if (getIsObstacleOrWall(i, c-1) || getIsObstacleOrWall(i, c) || getIsObstacleOrWall(i, c+1)) {
+        			break;
+        		}
+    			count++;
+    		}
+    		if (count >= row1-row2) {
+    			arr[1] = r-d/10;
     			arr[0] = 1;
     		}
+    		
+    		
     	} else if (bot.getDirection() == 2) {	// east
-    		if (isFree(r-1, c-2) && (isFree(r, c-2)) && (isFree(r+1, c-2))) {
-    			arr[2]--;	// c--
+    		int col1 = (int) Math.floor(c) - 2;
+    		int col2 = (int) Math.floor(c-d/10)-1;
+    		for (int i = col1; i>=col2; i--) {
+    			if (getIsObstacleOrWall(r+1, i) || getIsObstacleOrWall(r, i) || getIsObstacleOrWall(r-1, i)) {
+        			break;
+        		}
+    			count++;
+    		}
+    		if (count >= col1-col2) {
+    			arr[2] = c-d/10;
     			arr[0] = 1;
     		}
     	} else if (bot.getDirection() == 3) {	// south
-    		if (isFree(r+2, c-1) && (isFree(r+2, c)) && (isFree(r+2, c+1))) {
-    			arr[1]++;
+    		int row1 = (int) Math.floor(r) + 2;
+    		int row2 = (int) Math.floor(r+d/10) + 1;
+    		for (int i=row1; i<=row2; i++) {
+    			if (getIsObstacleOrWall(i, c-1) || getIsObstacleOrWall(i, c) || getIsObstacleOrWall(i, c+1)) {
+        			break;
+        		}
+    			count++;
+    		}
+    		if (count >= row2-row1) {
+    			arr[1] = r+d/10;
     			arr[0] = 1;
     		}
-    	} else if(bot.getDirection() == 4) {	// west
-    		if (isFree(r-1, c+2) && (isFree(r, c+2)) && (isFree(r+1, c-2))) {
-    			arr[2]++;
+    	} else if(bot.getDirection() == 4) {
+    		int col1 = (int) Math.floor(c) + 2;
+    		int col2 = (int) Math.floor(c+d/10)+1;
+    		for (int i=col1; i<=col2; i++) {
+    			if (getIsObstacleOrWall(r+1, i) || getIsObstacleOrWall(r, i) || getIsObstacleOrWall(r-1, i)) {
+        			break;
+        		}
+    			count++;
+    		}
+    		if (count >= col2-col1) {
+    			arr[2] = c+d/10;
     			arr[0] = 1;
     		}
     	}
+    	
     	return arr;
     }
     
-    private int[] checkLeftForwardAvailable(int r, int c) {
-    	int[] arr = {0, r, c};
+    private double[] checkLeftForwardAvailable(double r, double c) {
+    	double[] arr = {0, r, c};
     	boolean front = false;
 		boolean left = false;
     	// check whole 3x3 region above robot is available and left 3x3 region is also available
-		int[] dif = changesWithAngle(90);
+		double[] dif = changesWithAngle(90);
 		// north
 		if (bot.getDirection() == 1) {
 			front = isFree(r+4,c-1) && isFree(r+4,c) && isFree(r+4,c+1) &&
@@ -476,12 +564,12 @@ public class Map extends JPanel{
     	return arr;
     }
     
-    private int[] checkRightForwardAvailable(int r, int c) {
-    	int[] arr = {0, r, c};
+    private double[] checkRightForwardAvailable(double r, double c) {
+    	double[] arr = {0, r, c};
     	boolean front = false;
 		boolean right = false;
     	// check whole 3x3 region above robot is available and left 3x3 region is also available
-		int[] dif = changesWithAngle(90);
+		double[] dif = changesWithAngle(90);
 		// north
 		if (bot.getDirection() == 1) {
 			front = isFree(r+4,c-1) && isFree(r+4,c) && isFree(r+4,c+1) &&
@@ -545,12 +633,12 @@ public class Map extends JPanel{
     	return arr;
     }
     
-    private int[] checkLeftBackwardAvailable(int r, int c) {
-    	int[] arr = {0, r, c};
+    private double[] checkLeftBackwardAvailable(double r, double c) {
+    	double[] arr = {0, r, c};
     	boolean back = false;
 		boolean left = false;
     	// check whole 3x3 region above robot is available and left 3x3 region is also available
-		int[] dif = changesWithAngle(90);
+		double[] dif = changesWithAngle(90);
 		// north
 		if (bot.getDirection() == 1) {
 			back = 	isFree(r-2,c-1) && isFree(r-2,c  ) && isFree(r-2,c+1) &&
@@ -614,12 +702,12 @@ public class Map extends JPanel{
     	return arr;
     }
     
-    private int[] checkRightBackwardAvailable(int r, int c) {
-    	int[] arr = {0, r, c};
+    private double[] checkRightBackwardAvailable(double r, double c) {
+    	double[] arr = {0, r, c};
     	boolean back = false;
 		boolean right = false;
     	// check whole 3x3 region above robot is available and left 3x3 region is also available
-		int[] dif = changesWithAngle(90);
+		double[] dif = changesWithAngle(90);
 		// north
 		if (bot.getDirection() == 1) {
 			back = 	isFree(r-2,c-1) && isFree(r-2,c  ) && isFree(r-2,c+1) &&
@@ -689,8 +777,8 @@ public class Map extends JPanel{
 	 * @param angle 0 <= angle <= 90
 	 * @return array of 2 int numbers: front distance and side distance
 	 */
-	private int[] changesWithAngle(int angle) {
-		int[] dif = {3,3};
+	private double[] changesWithAngle(int angle) {
+		double[] dif = {3,3};
 		if (angle == 90) {
 			return dif;
 		}
@@ -812,13 +900,12 @@ public class Map extends JPanel{
             
         }
         
-        if (isDrawCellsToArrive) {
+        if (isDrawPositionToArrive) {
         	// printObstacle();
-        	// findCellsToArrive();
+        	// findpositionToArrive();
         	for (int i=0; i<MapConstants.NUM_OBSTACLE; i++) {
-        		int crow = cellsToArrive[i][0];
-        		int ccol = cellsToArrive[i][1];
-        		int cdirection = cellsToArrive[i][2];
+        		int crow = (int) Math.floor(positionToArrive[i][0]);
+        		int ccol = (int) Math.floor(positionToArrive[i][1]);
         		g.setColor(GraphicsConstants.C_ARRIVE);
         		g.fillRect(_mapCells[crow][ccol].cellX + GraphicsConstants.MAP_X_OFFSET, _mapCells[crow][ccol].cellY, GraphicsConstants.CELL_SIZE, GraphicsConstants.CELL_SIZE);
         	}

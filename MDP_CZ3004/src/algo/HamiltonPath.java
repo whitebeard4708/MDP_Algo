@@ -50,7 +50,7 @@ public class HamiltonPath {
             CommMgr.getCommMgr().sendMsg("START", CommMgr.toAndroid);
         }
         
-        int[] source = {bot.getRow(), bot.getCol(), bot.getDirection()};
+        double[] source = {bot.getRow(), bot.getCol(), bot.getDirection()};
         hamiltonPathLoop(source);
 	}
 	
@@ -58,16 +58,16 @@ public class HamiltonPath {
 	 * Find path to obstacle and move robot to the according position
 	 * @param source
 	 */
-	private void hamiltonPathLoop(int[] source) {
+	private void hamiltonPathLoop(double[] source) {
 		for (int i=0; i<MapConstants.NUM_OBSTACLE; i++) {
 			// find next stop
         	int index = findDestination(source);
-        	int[] destination = getDestination(index);
+        	double[] destination = getDestination(index);
         	System.out.println("Next location should be (" + destination[0] + "," + destination[1] + "," + destination[2] + ")");
         	
         	// Go to next stop, also count for error, 
         	// so this is a loop until current_location is the desired stop Cell
-        	int[] current_location = source.clone();
+        	double[] current_location = source.clone();
     		while (!closeEnough(current_location, destination)) {
         		String path = findPath(current_location, destination);
             	current_location = executePath(current_location, path);
@@ -90,7 +90,7 @@ public class HamiltonPath {
 	 * @param source: [row, col, direction] of source
 	 * @return index of next obstacle to be scanned
 	 */
-	private int findDestination(int[] source) {
+	private int findDestination(double[] source) {
 		// find list of index within unfound obstacles;
 		int count = 0;
 		int[] indexList = new int[numObstacleLeft];
@@ -108,7 +108,7 @@ public class HamiltonPath {
 		int min_loss_index = -1;
 		
 		for (int i=0; i<count; i++) {
-			int[] estimate_destination = map.getCellsToArrive(indexList[i]);
+			double[] estimate_destination = map.getPositionToArrive(indexList[i]);
 			// find loss when moving
 			int loss1 = calculateLoss(source, estimate_destination);
 			// get the minimal loss
@@ -122,8 +122,8 @@ public class HamiltonPath {
 	
 	
 	
-	private int[] getDestination(int index) {
-		int[] destination = map.getCellsToArrive(index);
+	private double[] getDestination(int index) {
+		double[] destination = map.getPositionToArrive(index);
 		return destination;
 	}
 	
@@ -134,12 +134,12 @@ public class HamiltonPath {
 	 * @param destination
 	 * @return
 	 */
-	private int calculateLoss(int[] source, int[] destination) {
+	private int calculateLoss(double[] source, double[] destination) {
 		int loss = 0;
 		// based on the direction difference of source and destination
-		int direction_dif = Math.abs(source[2] - destination[2]);
-		int hdif = 0;
-		int vdif = 0;
+		double direction_dif = Math.abs(source[2] - destination[2]);
+		double hdif = 0;
+		double vdif = 0;
 		if (direction_dif == 0) {		// same direction
 			// at least 2 turns
 			
@@ -156,7 +156,15 @@ public class HamiltonPath {
 		}
 		
 		else if (direction_dif == 1) {	// turn left or turn right once
-			
+			if (source[2] == 1 || source[2] == 3) { // facing north or south
+				hdif = Math.abs(source[1] - destination[1]);
+				vdif = Math.abs(source[0] - destination[1]);
+				
+			} else if (source[2] == 2 || source[2] == 4) {
+				hdif = Math.abs(source[0] - destination[0]);
+				vdif = Math.abs(source[1] - destination[1]);
+			}
+			loss += 2 + Math.abs(2 - hdif) + 2 + Math.abs(2-vdif);
 			
 		}
 		return loss;
@@ -169,17 +177,17 @@ public class HamiltonPath {
 	 * @param destination
 	 * @return
 	 */
-	private String findPath(int[] source, int[] destination) {
+	private String findPath(double[] source, double[] destination) {
 		String path = "";
 		return path;
 	}
 	
 	/**
-	 * Return position and direction of robot after executing path
+	 * Guide the robot to move from current position with written path
 	 * @param path
-	 * @return
+	 * @return Return position and direction of robot
 	 */
-	private int[] executePath(int[] current_position, String path) {
+	private double[] executePath(double[] current_position, String path) {
 		// find position based on path
 		// and send message to keep track of robot location
 		
@@ -254,7 +262,7 @@ public class HamiltonPath {
 	 * @param p2 position 2 [row2, col2, direction2]
 	 * @return
 	 */
-	private boolean closeEnough(int[] p1, int[] p2) {
+	private boolean closeEnough(double[] p1, double[] p2) {
 		boolean ans = false;
 		if (p1[2] == p2[2]) {
 			// north/south and same row

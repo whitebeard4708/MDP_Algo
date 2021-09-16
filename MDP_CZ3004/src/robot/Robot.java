@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 public class Robot {
 	// Center cell
 	// Will always be calculated to integer value
-	private int col; // col
-	private int row; // row
+	private double col; // col
+	private double row; // row
 	
 	private int direction; 	// 0 - North || 1 - East || 2 - South || 3 - West
 	private char movement;	
@@ -21,7 +21,7 @@ public class Robot {
 	private int speed = 100;	
 	private final boolean isRealBot;
 	
-	public Robot(int row, int col, boolean realBot) {
+	public Robot(double row, double col, boolean realBot) {
 		this.row = row;
 		this.col = col;
 		this.isRealBot = realBot;
@@ -33,11 +33,11 @@ public class Robot {
 		return this.direction;
 	}
 	
-	public int getRow() {
+	public double getRow() {
 		return this.row;
 	}
 	
-	public int getCol() {
+	public double getCol() {
 		return this.col;
 	}
 	
@@ -53,20 +53,14 @@ public class Robot {
 		this.speed = speed;
 	}
 	
-	
-	
 	/**
 	 * Set robot center to position (row, col)
 	 * @param row
 	 * @param col
 	 */
-	public void setRobotPos(int row, int col) {
+	public void setRobotPos(double row, double col) {
 		this.row = row;
 		this.col = col;
-	}
-	
-	public boolean checkValidRobotCenter(int r, int c) {
-		return ((1<=r) && (r<=MapConstants.MAP_ROW-2) && (1<=c) && (c<=MapConstants.MAP_COL-2));
 	}
 	
 	/**

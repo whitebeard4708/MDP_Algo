@@ -33,11 +33,8 @@ public class Simulator {
 
     private static int speedLimit = robot.RobotConstants.SPEED;				// speed limit
     private static int timeLimit = 4000;            // time limit
-    private static int coverageLimit = 400;         // coverage limit
 
     private static final CommMgr comm = CommMgr.getCommMgr();
-    private static int fpRow;
-    private static int fpCol;
     private static final boolean realRun = false;
 
     /**
@@ -180,7 +177,7 @@ public class Simulator {
         formatButton(btn_CellsToArrive);
         btn_CellsToArrive.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                map.findCellsToArrive();
+                map.findPositionToArrive();
                 map.repaint();
             }
         });
@@ -221,12 +218,28 @@ public class Simulator {
         // Move Forward Button
         JButton btn_Forward = new JButton("Forward");
         formatButton(btn_Forward);
+        
         btn_Forward.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                map.moveRobotForward(1);
-                CardLayout cl = ((CardLayout) _mapCards.getLayout());
-                cl.show(_mapCards, "REAL_MAP");
-                map.repaint();
+            	JDialog distanceDialog = new JDialog(_appFrame, "Distance input", true);
+                distanceDialog.setSize(400, 100);
+                distanceDialog.setLayout(new FlowLayout());
+
+                final JTextField loadTF = new JTextField(15);
+                JButton distanceButton = new JButton("Next");
+            	distanceButton.addMouseListener(new MouseAdapter() {
+            		public void mousePressed(MouseEvent e1) {
+            			double distance = Double.parseDouble(loadTF.getText());
+                        map.moveRobotForward(distance);
+                        CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                        cl.show(_mapCards, "REAL_MAP");
+                        map.repaint();
+            		}
+            	});
+            	distanceDialog.add(new JLabel("Move forward by __ cm"));
+            	distanceDialog.add(loadTF);
+            	distanceDialog.add(distanceButton);
+            	distanceDialog.setVisible(true);
             }
         });
         _buttons.add(btn_Forward);
@@ -236,10 +249,25 @@ public class Simulator {
         formatButton(btn_Backward);
         btn_Backward.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                map.moveRobotBackward(1);
-                CardLayout cl = ((CardLayout) _mapCards.getLayout());
-                cl.show(_mapCards, "REAL_MAP");
-                map.repaint();
+            	JDialog distanceDialog = new JDialog(_appFrame, "Distance input", true);
+                distanceDialog.setSize(400, 100);
+                distanceDialog.setLayout(new FlowLayout());
+
+                final JTextField loadTF = new JTextField(15);
+                JButton distanceButton = new JButton("Next");
+            	distanceButton.addMouseListener(new MouseAdapter() {
+            		public void mousePressed(MouseEvent e1) {
+            			double distance = Double.parseDouble(loadTF.getText());
+                        map.moveRobotBackward(distance);
+                        CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                        cl.show(_mapCards, "REAL_MAP");
+                        map.repaint();
+            		}
+            	});
+            	distanceDialog.add(new JLabel("Move backward by __ cm"));
+            	distanceDialog.add(loadTF);
+            	distanceDialog.add(distanceButton);
+            	distanceDialog.setVisible(true);
             }
         });
         _buttons.add(btn_Backward);
