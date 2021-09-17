@@ -28,7 +28,7 @@ public class CommMgr {
         return commMgr;
     }
 
-    public void openConnection() {
+    public int openConnection() {
         System.out.println("Opening connection...");
 
         try {
@@ -41,7 +41,7 @@ public class CommMgr {
 
             System.out.println("openConnection() --> " + "Connection established successfully!");
 
-            return;
+            return 1;
         } catch (UnknownHostException e) {
             System.out.println("openConnection() --> UnknownHostException");
         } catch (IOException e) {
@@ -52,9 +52,10 @@ public class CommMgr {
         }
 
         System.out.println("Failed to establish connection!");
+        return 0;
     }
 
-    public void closeConnection() {
+    public int closeConnection() {
         System.out.println("Closing connection...");
 
         try {
@@ -63,6 +64,7 @@ public class CommMgr {
             if (conn != null) {
                 conn.close();
                 conn = null;
+                return 1;
             }
             System.out.println("Connection closed!");
         } catch (IOException e) {
@@ -73,9 +75,10 @@ public class CommMgr {
             System.out.println("closeConnection() --> Exception");
             System.out.println(e.toString());
         }
+        return 0;
     }
 
-    public void sendMsg(String msg, String destination) {
+    public int sendMsg(String msg, String destination) {
         System.out.println("Sending a message...");
 
         try {
@@ -90,12 +93,14 @@ public class CommMgr {
             System.out.println("Sending out message:\n" + outputMsg);
             writer.write(outputMsg);
             writer.flush(); // send message
+            return 1;
         } catch (IOException e) {
             System.out.println("sendMsg() --> IOException");
         } catch (Exception e) {
             System.out.println("sendMsg() --> Exception");
             System.out.println(e.toString());
         }
+        return 0;
     }
 
     public String recvMsg() {

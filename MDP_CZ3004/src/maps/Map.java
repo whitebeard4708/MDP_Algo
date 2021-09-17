@@ -127,7 +127,10 @@ public class Map extends JPanel{
     	
     	if (image_side != 0) {
     		setImageSide(row, col, image_side);
-        	setImageId(row, col, image_id);
+    		if (image_id != MapConstants.UNIDENTIFED_CHAR) {
+    			setImageId(row, col, image_id);
+    		}
+        	
     		obstacles[numObstacleFound] = grid[row][col];
         	numObstacleFound++;
         	System.out.println("Add new image to map");
@@ -233,7 +236,7 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move forward to position (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println(String.format("Move forward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
 		}
     }
     
@@ -257,7 +260,7 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move backward to position (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println(String.format("Move backward to position (%.1f,%.1f)",bot.getRow(), bot.getCol()));
 		}
     }
     
@@ -285,7 +288,7 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move left forward to position (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println(String.format("Move left forward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
 		}
     }
     
@@ -312,7 +315,7 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move left backward to position (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println(String.format("Move left backward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
 		}
     }
     
@@ -337,7 +340,7 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move right forward to position (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println(String.format("Move right forward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
 		}
     }
     
@@ -363,7 +366,7 @@ public class Map extends JPanel{
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
-			System.out.println("Move right backward to position (" + bot.getRow() + "," + bot.getCol() + ").");
+			System.out.println(String.format("Move right backward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
 		}
     }
     
@@ -778,7 +781,7 @@ public class Map extends JPanel{
 	 * @return array of 2 int numbers: front distance and side distance
 	 */
 	private double[] changesWithAngle(int angle) {
-		double[] dif = {3,3};
+		double[] dif = {2.8,2.8};
 		if (angle == 90) {
 			return dif;
 		}
@@ -870,7 +873,7 @@ public class Map extends JPanel{
         double r = bot.getRow();
         double c = bot.getCol();
         
-        g.fillOval((int) ((c - 1) * GraphicsConstants.CELL_SIZE + GraphicsConstants.ROBOT_X_OFFSET + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - (r * GraphicsConstants.CELL_SIZE + GraphicsConstants.ROBOT_Y_OFFSET)), GraphicsConstants.ROBOT_W, GraphicsConstants.ROBOT_H);
+        g.fillOval((int) ((c - 1.5) * GraphicsConstants.CELL_SIZE + GraphicsConstants.ROBOT_X_OFFSET + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - ((r-0.5) * GraphicsConstants.CELL_SIZE + GraphicsConstants.ROBOT_Y_OFFSET)), GraphicsConstants.ROBOT_W, GraphicsConstants.ROBOT_H);
 
         // Paint the robot's direction indicator on-screen.
         g.setColor(GraphicsConstants.C_ROBOT_DIR);
@@ -879,22 +882,22 @@ public class Map extends JPanel{
         switch (d) {
         	// North
             case 1:
-                g.fillOval( (int) (c * GraphicsConstants.CELL_SIZE + 10 + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - r * GraphicsConstants.CELL_SIZE - 5), GraphicsConstants.ROBOT_DIR_W, GraphicsConstants.ROBOT_DIR_H);
+                g.fillOval( (int) ((c-0.5) * GraphicsConstants.CELL_SIZE + 10 + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - (r-0.5) * GraphicsConstants.CELL_SIZE - 5), GraphicsConstants.ROBOT_DIR_W, GraphicsConstants.ROBOT_DIR_H);
                 break;
             
             // East
             case 2:
-                g.fillOval( (int) (c * GraphicsConstants.CELL_SIZE + 35 + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - r * GraphicsConstants.CELL_SIZE + 10), GraphicsConstants.ROBOT_DIR_W, GraphicsConstants.ROBOT_DIR_H);
+                g.fillOval( (int) ((c-0.5) * GraphicsConstants.CELL_SIZE + 35 + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - (r-0.5) * GraphicsConstants.CELL_SIZE + 10), GraphicsConstants.ROBOT_DIR_W, GraphicsConstants.ROBOT_DIR_H);
                 break;
             
             // South
             case 3:
-                g.fillOval((int) (c * GraphicsConstants.CELL_SIZE + 10 + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - r * GraphicsConstants.CELL_SIZE + 35), GraphicsConstants.ROBOT_DIR_W, GraphicsConstants.ROBOT_DIR_H);
+                g.fillOval((int) ((c-0.5) * GraphicsConstants.CELL_SIZE + 10 + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - (r-0.5) * GraphicsConstants.CELL_SIZE + 35), GraphicsConstants.ROBOT_DIR_W, GraphicsConstants.ROBOT_DIR_H);
                 break;
             
             // West
             case 4:
-                g.fillOval((int) (c * GraphicsConstants.CELL_SIZE - 15 + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - r * GraphicsConstants.CELL_SIZE + 10), GraphicsConstants.ROBOT_DIR_W, GraphicsConstants.ROBOT_DIR_H);
+                g.fillOval((int) ((c-0.5) * GraphicsConstants.CELL_SIZE - 15 + GraphicsConstants.MAP_X_OFFSET), (int) (GraphicsConstants.MAP_H - (r-0.5) * GraphicsConstants.CELL_SIZE + 10), GraphicsConstants.ROBOT_DIR_W, GraphicsConstants.ROBOT_DIR_H);
                 break;
             
             

@@ -19,7 +19,7 @@ public class Robot {
 	private char movement;	
 	
 	private int speed = 100;	
-	private final boolean isRealBot;
+	private boolean isRealBot;
 	
 	public Robot(double row, double col, boolean realBot) {
 		this.row = row;
@@ -61,6 +61,10 @@ public class Robot {
 	public void setRobotPos(double row, double col) {
 		this.row = row;
 		this.col = col;
+	}
+	
+	public void setRealBot(boolean realBot) {
+		this.isRealBot = realBot;
 	}
 	
 	/**

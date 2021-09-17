@@ -34,12 +34,11 @@ public class MapDescriptor {
             BufferedReader buf = new BufferedReader(new InputStreamReader(inputStream));
 
             // number of obstacles
-            int num_found_obstacles = 0;
             String line = buf.readLine();
-            num_found_obstacles = Integer.parseInt(line);
+            
             
          // Found obstacles
-            for (int i=0; i<num_found_obstacles; i++) {
+            for (int i=0; i<MapConstants.NUM_OBSTACLE; i++) {
             	line = buf.readLine();
             	String [] obs = new String[4];
             	obs = line.split(",");

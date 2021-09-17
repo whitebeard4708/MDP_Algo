@@ -29,28 +29,20 @@ public class Simulator {
 
     private static Robot bot;
 
-    private static Map map = null;
+    private static Map map;
 
     private static int speedLimit = robot.RobotConstants.SPEED;				// speed limit
     private static int timeLimit = 4000;            // time limit
 
     private static final CommMgr comm = CommMgr.getCommMgr();
-    private static final boolean realRun = false;
+    // private static final boolean realRun = false;
 
     /**
      * Initialize the different maps and displays the application.
      */
     public static void main(String[] args) {
-
-        int start_row = RobotConstants.START_ROW;
-        int start_col = RobotConstants.START_COL;
-        
-        bot = new Robot(start_row, start_col, realRun);
-
-        if (!realRun) {
-        	map = new Map(bot);
-        }
-
+    	bot = new Robot(1.5, 1.5, false);
+    	map = new Map(bot);
         displayEverything();
     }
 
@@ -163,10 +155,10 @@ public class Simulator {
         formatButton(btn_ResetPosition);
         btn_ResetPosition.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                bot.setRobotPos(1, 1);
+                bot.setRobotPos(1.5, 1.5);
                 bot.setDirection(1);
                 map.repaint();
-                System.out.println("Reset Position to (1,1), facing North");
+                System.out.println("Reset Position to (1.5,1.5), facing North");
                 
             }
         });
@@ -210,7 +202,21 @@ public class Simulator {
         formatButton(btn_ConnectRPI);
         btn_ConnectRPI.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-            	comm.openConnection();
+            	int a = comm.openConnection();
+            	if (a==1) {	// can connect
+            		bot.setRealBot(true);
+            		// receive obstacles from Android
+            		for (int i=0; i<MapConstants.NUM_OBSTACLE; i++) {
+            			String coor = comm.recvMsg();	// row,col
+            			String side = comm.recvMsg();	// image_side
+            			String[] parts = coor.split(",");
+            			int r = Integer.parseInt(parts[0]);
+            			int c = Integer.parseInt(parts[1]);
+            			int image_side = Integer.parseInt(side);
+            			map.addNewImage(r, c, image_side, MapConstants.UNIDENTIFED_CHAR);
+            		}
+            		
+            	}
             }
         });
         _buttons.add(btn_ConnectRPI);
@@ -229,6 +235,7 @@ public class Simulator {
                 JButton distanceButton = new JButton("Next");
             	distanceButton.addMouseListener(new MouseAdapter() {
             		public void mousePressed(MouseEvent e1) {
+            			distanceDialog.setVisible(false);
             			double distance = Double.parseDouble(loadTF.getText());
                         map.moveRobotForward(distance);
                         CardLayout cl = ((CardLayout) _mapCards.getLayout());
@@ -257,6 +264,7 @@ public class Simulator {
                 JButton distanceButton = new JButton("Next");
             	distanceButton.addMouseListener(new MouseAdapter() {
             		public void mousePressed(MouseEvent e1) {
+            			distanceDialog.setVisible(false);
             			double distance = Double.parseDouble(loadTF.getText());
                         map.moveRobotBackward(distance);
                         CardLayout cl = ((CardLayout) _mapCards.getLayout());
