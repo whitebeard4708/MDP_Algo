@@ -512,7 +512,7 @@ public class Map extends JPanel{
 			left  = isFree(r+4,c-4) && isFree(r+4,c-3) && isFree(r+4,c-2) &&
 					isFree(r+3,c-4) && isFree(r+3,c-3) && isFree(r+3,c-2) &&
 					isFree(r+2,c-4) && isFree(r+2,c-3) && isFree(r+2,c-2);
-			if (front && left ) {
+			if (front && left && isFree(r+1,c-2)) {
 				arr[0] = 1;
 				arr[1] = arr[1] + dif[0];
 				arr[2] = arr[2] - dif[1];
@@ -527,7 +527,7 @@ public class Map extends JPanel{
 			left  = isFree(r+4,c+2) && isFree(r+4,c+3) && isFree(r+4,c+4) &&
 					isFree(r+3,c+2) && isFree(r+3,c+3) && isFree(r+3,c+4) &&
 					isFree(r+2,c+2) && isFree(r+2,c+3) && isFree(r+2,c+4);
-			if (front && left) {
+			if (front && left && isFree(r+2,c+1)) {
 				arr[0] = 1;
 				arr[1] = arr[1] + dif[1];
 				arr[2] = arr[2] + dif[0];
@@ -542,7 +542,7 @@ public class Map extends JPanel{
 			left  = isFree(r-2,c+2) && isFree(r-2,c+3) && isFree(r-2,c+4) &&
 					isFree(r-3,c+2) && isFree(r-3,c+3) && isFree(r-3,c+4) &&
 					isFree(r-4,c+2) && isFree(r-4,c+3) && isFree(r-4,c+4);
-			if (front && left) {
+			if (front && left && isFree(r-1,c+2)) {
 				arr[0] = 1;
 				arr[1] = arr[1] - dif[0];
 				arr[2] = arr[2] + dif[1];
@@ -557,7 +557,7 @@ public class Map extends JPanel{
 			left  = isFree(r-2,c-4) && isFree(r-2,c-3) && isFree(r-2,c-2) &&
 					isFree(r-3,c-4) && isFree(r-3,c-3) && isFree(r-3,c-2) &&
 					isFree(r-4,c-4) && isFree(r-4,c-3) && isFree(r-4,c-2);
-			if (front && left) {
+			if (front && left && isFree(r-2,c-1)) {
 				arr[0] = 1;
 				arr[1] = arr[1] - dif[1];
 				arr[2] = arr[2] - dif[0];
@@ -581,7 +581,7 @@ public class Map extends JPanel{
 			right = isFree(r+4,c+2) && isFree(r+4,c+3) && isFree(r+4,c+4) &&
 					isFree(r+3,c+2) && isFree(r+3,c+3) && isFree(r+3,c+4) &&
 					isFree(r+2,c+2) && isFree(r+2,c+3) && isFree(r+2,c+4);
-			if (front && right ) {
+			if (front && right && isFree(r+1,c+2)) {
 				arr[0] = 1;
 				arr[1] = arr[1] + dif[0];
 				arr[2] = arr[2] + dif[1];
@@ -596,7 +596,7 @@ public class Map extends JPanel{
 			right = isFree(r-2,c+2) && isFree(r-2,c+3) && isFree(r-2,c+4) &&
 					isFree(r-3,c+2) && isFree(r-3,c+3) && isFree(r-3,c+4) &&
 					isFree(r-4,c+2) && isFree(r-4,c+3) && isFree(r-4,c+4);
-			if (front && right) {
+			if (front && right && isFree(r-2,c+1)) {
 				arr[0] = 1;
 				arr[1] = arr[1] - dif[1];
 				arr[2] = arr[2] + dif[0];
@@ -611,7 +611,7 @@ public class Map extends JPanel{
 			right = isFree(r-2,c-4) && isFree(r-2,c-3) && isFree(r-2,c-2) &&
 					isFree(r-3,c-4) && isFree(r-3,c-3) && isFree(r-3,c-2) &&
 					isFree(r-4,c-4) && isFree(r-4,c-3) && isFree(r-4,c-2);
-			if (front && right) {
+			if (front && right && isFree(r-1,c-2)) {
 				arr[0] = 1;
 				arr[1] = arr[1] - dif[0];
 				arr[2] = arr[2] - dif[1];
@@ -626,7 +626,7 @@ public class Map extends JPanel{
 			right = isFree(r+4,c-4) && isFree(r+4,c-3) && isFree(r+4,c-2) &&
 					isFree(r+3,c-4) && isFree(r+3,c-3) && isFree(r+3,c-2) &&
 					isFree(r+2,c-4) && isFree(r+2,c-3) && isFree(r+2,c-2);
-			if (front && right) {
+			if (front && right && isFree(r+2,c-1)) {
 				arr[0] = 1;
 				arr[1] = arr[1] + dif[1];
 				arr[2] = arr[2] - dif[0];
