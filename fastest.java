@@ -65,24 +65,24 @@ public class fastest{
 		        else {
 		           break;
 		        }
-				 System.out.print(test[i][0]);
-				 System.out.print(test[i][1]);
-				 System.out.println((char)test[i][2]);
+				// System.out.print(test[i][0]);
+				 //System.out.print(test[i][1]);
+				 //System.out.println((char)test[i][2]);
 			 }
-        	//int [][] duplist2 = test;
+        	int [][] duplist2 = test;
         	int [][] shortestpath = new int [6][6];
-        //	System.out.println(duplist2.length);
+       	//System.out.println(duplist2.length);
         	int index = 0;
-        	for (int i=0; i < duplist.length; i++) { 	
-	            if(i == duplist.length-1) { 
+        	for (int i=0; i < duplist2.length; i++) { 	
+	            if(i == duplist2.length-1) { 
 	            	//17085E,60175W,5580S,5560N,00N
 	            	shortestpath[shortestpath.length-1] = test[i];
 	            	// System.out.print("hello");
 	           
 	            
-//	            System.out.print(shortestpath[shortestpath.length-1][0]);
-//				System.out.print(shortestpath[shortestpath.length-1][1]);
-//				System.out.println((char)shortestpath[shortestpath.length-1][2]);
+	            	System.out.print(shortestpath[shortestpath.length-1][0]);
+	            	System.out.print(shortestpath[shortestpath.length-1][1]);
+	            	System.out.println((char)shortestpath[shortestpath.length-1][2]);
         	}	 
             	int[][]result = find_closest_brute_force(test);
 	            shortestpath[index]=result[0];
