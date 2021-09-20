@@ -705,8 +705,8 @@ public class Map extends JPanel{
 			rd = r - dif[0];
 			cd = c + dif[1];
 			if (checkFreeRegion(r-0.5, c-1.5, rd-1.5, cd+1.5)) {
-				arr[0] = dif[0];
-				arr[1] = dif[1];
+				arr[0] = rd;
+				arr[1] = cd;
 				arr[2] = 1;
 			}	
 		} 
@@ -720,8 +720,8 @@ public class Map extends JPanel{
 			rd = r - dif[1];
 			cd = c - dif[0];
 			if (checkFreeRegion(r+1.5, c-0.5, rd-1.5, cd-1.5)) {
-				arr[0] = dif[0];
-				arr[1] = dif[1];
+				arr[0] = rd;
+				arr[1] = cd;
 				arr[2] = 1;
 			}
 		}
@@ -764,7 +764,7 @@ public class Map extends JPanel{
 	 */
 	private double[] changeWithAngle(int angle) {
 		// vertical dif, horizontal dif
-		double radius = 3;
+		double radius = RobotConstants.FAKE_RADIUS;
 		// double radius = RobotConstants.TURN_RADIUS;
 		double[] ans = {0,0};
 		double r_angle = Math.toRadians(angle);
