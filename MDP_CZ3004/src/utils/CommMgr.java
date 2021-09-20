@@ -9,7 +9,9 @@ public class CommMgr {
 		// Android --> PC : waypoint in the format of row +" "+ col  eg. "wp3,5"
 	public static final String toSTM = "ALG|STM|";
 	public static final String toAndroid = "ALG|AND|";
-	public static final String toRPI = "ALG|RPI|TP";
+	public static final String toRPI = "ALG|RPI|";
+	public static final String FP_START = "FP_START";
+	public static final String HP_START = "HP_START";
 	
 	
 	private static CommMgr commMgr = null;
@@ -84,10 +86,10 @@ public class CommMgr {
         try {
             String outputMsg = "";
             if (msg == null) {
-                outputMsg = "ALG|" + destination + "|\n";												 
+                outputMsg =  destination + "#|\n";												 
             } 
             else {
-                outputMsg = "ALG|" + destination + "|" + msg + "\n";													
+                outputMsg = destination + "|" + msg + "#\n";													
             }
 
             System.out.println("Sending out message:\n" + outputMsg);
