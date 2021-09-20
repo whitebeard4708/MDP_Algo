@@ -1,6 +1,7 @@
 package simulator;
 
 import algo.FastestPath;
+import algo.HamiltonPath;
 import algo.Node;
 import maps.Map;
 import maps.MapConstants;
@@ -186,10 +187,39 @@ public class Simulator {
             	
             	// map.repaint();
                 System.out.println("Hamiltonian path started");
+                HamiltonPath hp = new HamiltonPath(map, bot);
+                hp = new HamiltonPath(map, bot);
+                hp.getHamiltonPath();
+                hp.runHamiltonPath();
                 // HamiltonianPath.execute();
             }
         });
         _buttons.add(btn_HamiltonianPath);
+        
+        
+        // FastestPath Class for Multithreading
+        class FastestPathSim extends SwingWorker<Integer, String> {
+            protected Integer doInBackground() throws Exception {
+                bot.setRobotPos(RobotConstants.START_ROW, RobotConstants.START_COL);
+                map.repaint();
+
+                if (bot.getRealBot()) {
+                    while (true) {
+                        System.out.println("Waiting for FP_START...");
+                        String msg = comm.recvMsg();
+                        if (msg.equals(CommMgr.FP_START)) break;
+                    }
+                }
+
+                FastestPath fastestPath;
+                fastestPath = new FastestPath(map, bot);
+                fastestPath.getFastestPath();
+                fastestPath.runFastestPath();
+
+                return 222;
+            }
+        }
+        
         
         // Fastest Path
         JButton btn_FastestPath = new JButton("Fastest path");
@@ -198,17 +228,33 @@ public class Simulator {
             public void mousePressed(MouseEvent e) {
             	// do fastest path
             	System.out.println("Fastest path started");
-            	FastestPath fp = new FastestPath(map, bot);
-            	/*
-            	Node start = new Node(1,1,90);
-            	Node end = new Node(10,3,0);
-            	Node n = fp.ASTAR(start, end);
-            	Stack<String> ss = fp.printPath(n);
-            	String s = fp.shortenPath(ss);
-            	System.out.println(s);
-            	*/
             	
+            	CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                cl.show(_mapCards, "REAL_MAP");
+            	FastestPath fp = new FastestPath(map, bot);
+            	
+            	fp.getFastestPath();
             	fp.runFastestPath();
+            	// new FastestPathSim().execute();
+            	
+            	/*
+            	Node start = new Node(5,7,0);
+            	Node end = new Node(7,17,-90);
+            	Node n1 = fp.ASTAR(start, end);
+            	Stack<String> ss1 = fp.printPath(n1);
+            	String s1 = fp.shortenPath(ss1);
+            	System.out.println(s1);
+            	System.out.println(fp.reversePath(s1));
+            	
+            	System.out.println("From end to start");
+            	
+            	Node n2 = fp.ASTAR(end, start);
+            	Stack<String> ss2 = fp.printPath(n2);
+            	String s2 = fp.shortenPath(ss2);
+            	System.out.println(s2);
+            	System.out.println(fp.reversePath(s2));
+            	*/
+            	System.out.println("Fastest path end");
             }
         });
         _buttons.add(btn_FastestPath);
