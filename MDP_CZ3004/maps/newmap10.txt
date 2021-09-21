@@ -1,0 +1,15 @@
+5
+10,7,W,K
+16,16,S,P
+2,10,N,I
+8,14,S,L
+17,8,W,T
+
+same cost,
+different path
+
+17,8,W,T
+16,16,S,P
+8,14,S,L
+2,10,N,I
+10,7,W,K
