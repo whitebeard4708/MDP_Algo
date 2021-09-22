@@ -223,7 +223,7 @@ public class Map extends JPanel{
     	if (bot.getRealBot()) {
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
-			String msg = RobotConstants.FORWARD + String.format("%2d", d);
+			String msg = RobotConstants.FORWARD + String.format("%03d", d);
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
@@ -248,7 +248,7 @@ public class Map extends JPanel{
     	if (bot.getRealBot()) {
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
-			String msg = RobotConstants.BACKWARD + String.format("%2d", d);
+			String msg = RobotConstants.BACKWARD + String.format("%03d", d);
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
@@ -285,7 +285,7 @@ public class Map extends JPanel{
     	if (bot.getRealBot()) {
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
-			String msg = RobotConstants.LEFT_FORWARD + String.format("%2d", angle);
+			String msg = RobotConstants.LEFT_FORWARD + String.format("%03d", angle);
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
@@ -321,7 +321,7 @@ public class Map extends JPanel{
     	if (bot.getRealBot()) {
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
-			String msg = RobotConstants.LEFT_BACKWARD + String.format("%2d", angle);
+			String msg = RobotConstants.LEFT_BACKWARD + String.format("%03d", angle);
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
@@ -355,7 +355,7 @@ public class Map extends JPanel{
     	if (bot.getRealBot()) {
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
-			String msg = RobotConstants.RIGHT_FORWARD + String.format("%2d", angle);
+			String msg = RobotConstants.RIGHT_FORWARD + String.format("%03d", angle);
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
@@ -390,7 +390,7 @@ public class Map extends JPanel{
     	if (bot.getRealBot()) {
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
-			String msg = RobotConstants.RIGHT_BACKWARD + String.format("%2d", 90);
+			String msg = RobotConstants.RIGHT_BACKWARD + String.format("%03d", 90);
 	        comm.sendMsg(msg, comm.toSTM);        
 		}
 		else {
