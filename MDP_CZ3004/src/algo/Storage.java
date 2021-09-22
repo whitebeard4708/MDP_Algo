@@ -33,6 +33,7 @@ public class Storage {
 	// for Hamiltonian path
 	private static int[] good_order = {1,2,3,4,5};
 	private static String[] goodPath;
+	private static boolean goodHP = false;
 	
 	private Storage(Map map, Robot bot) {
 		this.map = map;
@@ -106,7 +107,7 @@ public class Storage {
 		System.out.println("Cost: " + cost[0]);
 		System.out.println(Arrays.toString(good_order));
 		
-		optimalPath = new String[MapConstants.NUM_OBSTACLE];
+		goodPath = new String[MapConstants.NUM_OBSTACLE];
 		System.out.println(paths[0][good_order[0]]);
 		goodPath[0] = paths[0][good_order[0]];
 		for (int i=1; i<5; i++) {
@@ -279,14 +280,16 @@ public class Storage {
         		good_order[3] = a[3];
         		good_order[4] = a[4];
         		current_cost[0] = cost;
+        		goodHP = true;
         		//System.out.println(Arrays.toString(fastest_order));
         		//System.out.println(cost);
         	}
             // System.out.println(Arrays.toString(a));
             return;
         }
+		if (goodHP) return;
         for(int i = 0;i < size ;i++) {
-        	findShortestOrder(a, size-1, current_cost);
+        	findGoodOrder(a, size-1, current_cost);
             // always swap the first when odd,
             // swap the i-th when even
             if(size % 2 == 1) {
