@@ -190,7 +190,6 @@ public class Simulator {
             	// map.repaint();
                 System.out.println("Hamiltonian path started");
                 HamiltonPath hp = new HamiltonPath(map, bot);
-                hp = new HamiltonPath(map, bot);
                 hp.runHamiltonPath();
             }
         });
