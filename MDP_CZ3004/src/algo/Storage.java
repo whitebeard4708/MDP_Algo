@@ -479,12 +479,13 @@ public class Storage {
 		while (!ss.isEmpty()) {
 			String currmove = ss.pop();
 			char c = currmove.charAt(0);
+			int d = Integer.parseInt(currmove.substring(1));
 			if ( lastmove.charAt(0) == c && (c == RobotConstants.FORWARD || c == RobotConstants.BACKWARD)) {
-				int combine = Integer.parseInt(lastmove.substring(1)) + Integer.parseInt(currmove.substring(1));
-				lastmove = String.format("%c%d", c, combine);
+				int combine = Integer.parseInt(lastmove.substring(1)) + d;
+				lastmove = String.format("%c%03d", c, combine);
 			} else {
 				shorten = shorten + "/" + lastmove;
-				lastmove = currmove;
+				lastmove = String.format("%c%03d", c, d);
 			}
 		}
 		shorten = shorten + "/" + lastmove;
