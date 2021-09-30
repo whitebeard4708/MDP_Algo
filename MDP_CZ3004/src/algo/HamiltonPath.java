@@ -43,10 +43,11 @@ public class HamiltonPath {
 			// execute path
 			for (String step: steps) {
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(2000);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				
 				if (bot.getRealBot()) {
 					CommMgr.getCommMgr().sendMsg(step, CommMgr.toSTM);
 					// successfully bit
@@ -56,6 +57,7 @@ public class HamiltonPath {
 						b = rcvMsg.charAt(rcvMsg.length());
 					}
 				}
+				
 				// get new position after step
 				double[] new_pos = bot.posAfterMove(step);
 				System.out.println(step + ": " + Arrays.toString(new_pos));
@@ -65,6 +67,8 @@ public class HamiltonPath {
 				map.repaint();
 			}
 			// take picture
+			System.out.println("Take Picture");
+			
 			if (bot.getRealBot()) {
 				CommMgr.getCommMgr().sendMsg("TP", CommMgr.toRPI);
 				char b = '-';

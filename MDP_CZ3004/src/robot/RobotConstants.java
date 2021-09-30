@@ -15,12 +15,12 @@ public class RobotConstants {
     public static final int SENSOR_LONG_RANGE_H = 4;                // range of long range sensor (cells)
     public static final int START_DIR = 90;      					// start direction
     
-    public static final char FORWARD = 'W';
-    public static final char BACKWARD = 'S';
-    public static final char LEFT_FORWARD = 'A';
-    public static final char RIGHT_FORWARD = 'D';
-    public static final char LEFT_BACKWARD = 'Z';
-    public static final char RIGHT_BACKWARD = 'C';
+    public static final char FORWARD = 'w';
+    public static final char BACKWARD = 's';
+    public static final char LEFT_FORWARD = 'a';
+    public static final char RIGHT_FORWARD = 'd';
+    public static final char LEFT_BACKWARD = 'z';
+    public static final char RIGHT_BACKWARD = 'c';
     public static final char STOP = 'H';
     public static final char UNIDENTIFIED = 'U';
 }

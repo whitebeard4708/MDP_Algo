@@ -2,6 +2,7 @@ package utils;
 
 import maps.Map;
 import maps.MapConstants;
+import robot.Robot;
 import maps.Cell;
 import java.io.*;
 
@@ -43,7 +44,7 @@ public class MapDescriptor {
             	String[] obs = line.split(",");
             	int row = Integer.parseInt(obs[0]);
             	int col = Integer.parseInt(obs[1]);
-            	int image_side = convertCharToIntDirection(obs[2].charAt(0));
+            	int image_side = convertStringToIntDirection(obs[2]);
             	
             	// add details to map
             	map.addNewImage(row, col, image_side);
@@ -56,13 +57,45 @@ public class MapDescriptor {
         
     }
     
-    public static int convertCharToIntDirection(char c) {
-    	if (c == 'N') return 90;
-    	else if (c == 'E') return 0;
-    	else if (c == 'S') return -90;
-    	else if (c == 'W') return 180;
-    	else return 1;
+    
+    public static void loadMapFromAndroid(Map map, Robot bot) {
+    	// sample message from Android: AND|ALG|ADD,O1,10,6#
+    	// received from RPI: ADD,01,10,6
     	
+    	// connect already
+    	if (bot.getRealBot()) {
+    		CommMgr comm = CommMgr.getCommMgr();
+    		
+    		for (int i=0; i<MapConstants.NUM_OBSTACLE; i++) {
+    			
+				String pos = comm.recvMsg();
+				String face = comm.recvMsg();
+				String[] pos_parts = pos.split(",");
+				String[] face_parts = face.split(",");
+				
+				String obs_id = pos_parts[1];
+				
+				if (!pos_parts[0].equals(comm.ADD)) {
+					comm.sendMsg(String.format("Can't identify add obstacle %s", obs_id), comm.toAndroid);
+				}
+				else if (!face_parts[0].equals(comm.FACE)) {
+					comm.sendMsg(String.format("Can't identify image side %s", obs_id), comm.toAndroid);
+				} else {
+					int row = Integer.parseInt(pos_parts[2]);
+					int col = Integer.parseInt(pos_parts[3]);
+					String image_side = face_parts[2];
+					map.addNewImage(row, col, convertStringToIntDirection(image_side));
+				}
+    		}
+    	}
+    }
+    
+    public static int convertStringToIntDirection(String s) {
+    	if (s.equals("N")) return 90;
+    	else if (s.equals("E")) return 0;
+    	else if (s.equals("S")) return -90;
+    	else if (s.equals("W")) return 180;
+    	else return 1;
     }
 
 }

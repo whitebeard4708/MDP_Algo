@@ -223,8 +223,23 @@ public class Map extends JPanel{
     	if (bot.getRealBot()) {
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
-			String msg = RobotConstants.FORWARD + String.format("%03d", d);
-	        comm.sendMsg(msg, comm.toSTM);        
+			String msg = RobotConstants.FORWARD + String.format("%03d", (int) d);
+	        comm.sendMsg(msg, comm.toSTM);   
+	        String r = "";
+	        
+	        while (! r.equals("A")) {
+	        	r = comm.recvMsg();
+	        }
+	        
+	        String msgAND = String.format("POS,%d,%d,%c",(int) rd, (int) cd, charDir((int) bot.getDirection()));
+			comm.sendMsg(msgAND, CommMgr.toAndroid);
+			// successfully bit
+			char bAnd = '1';
+			while ( bAnd != '1') {
+				String rcvMsg = comm.recvMsg();
+				bAnd = rcvMsg.charAt(rcvMsg.length()-1);
+			}
+	        // System.out.println(r);
 		}
 		else {
 			System.out.println(String.format("Move forward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
@@ -248,8 +263,23 @@ public class Map extends JPanel{
     	if (bot.getRealBot()) {
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
-			String msg = RobotConstants.BACKWARD + String.format("%03d", d);
-	        comm.sendMsg(msg, comm.toSTM);        
+			String msg = RobotConstants.BACKWARD + String.format("%03d", (int) d);
+	        comm.sendMsg(msg, comm.toSTM);
+	        String r = "";
+	        
+	        while (! r.equals("A")) {
+	        	r = comm.recvMsg();
+	        }
+	        
+	        String msgAND = String.format("POS,%d,%d,%c",(int) rd, (int) cd, charDir((int) bot.getDirection()));
+			comm.sendMsg(msgAND, CommMgr.toAndroid);
+			// successfully bit
+			char bAnd = '1';
+			while ( bAnd != '1') {
+				String rcvMsg = comm.recvMsg();
+				bAnd = rcvMsg.charAt(rcvMsg.length()-1);
+			}
+	        // System.out.println(r);
 		}
 		else {
 			System.out.println(String.format("Move backward to position (%.1f,%.1f)",bot.getRow(), bot.getCol()));
@@ -286,7 +316,22 @@ public class Map extends JPanel{
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
 			String msg = RobotConstants.LEFT_FORWARD + String.format("%03d", angle);
-	        comm.sendMsg(msg, comm.toSTM);        
+	        comm.sendMsg(msg, comm.toSTM);
+	        String r = "";
+	        
+	        while (! r.equals("A")) {
+	        	r = comm.recvMsg();
+	        }
+	        
+	        String msgAND = String.format("POS,%d,%d,%c",(int) rd, (int) cd, charDir((int) bot.getDirection()));
+			comm.sendMsg(msgAND, CommMgr.toAndroid);
+			// successfully bit
+			char bAnd = '1';
+			while ( bAnd != '1') {
+				String rcvMsg = comm.recvMsg();
+				bAnd = rcvMsg.charAt(rcvMsg.length()-1);
+			}
+	        // System.out.println(r);
 		}
 		else {
 			System.out.println(String.format("Move left forward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
@@ -322,7 +367,22 @@ public class Map extends JPanel{
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
 			String msg = RobotConstants.LEFT_BACKWARD + String.format("%03d", angle);
-	        comm.sendMsg(msg, comm.toSTM);        
+	        comm.sendMsg(msg, comm.toSTM);
+	        
+	        String r = "";
+	        
+	        while (! r.equals("A")) {
+	        	r = comm.recvMsg();
+	        }
+	        
+	        String msgAND = String.format("POS,%d,%d,%c",(int) rd, (int) cd, charDir((int) bot.getDirection()));
+			comm.sendMsg(msgAND, CommMgr.toAndroid);
+			// successfully bit
+			char bAnd = '1';
+			while ( bAnd != '1') {
+				String rcvMsg = comm.recvMsg();
+				bAnd = rcvMsg.charAt(rcvMsg.length()-1);
+			}
 		}
 		else {
 			System.out.println(String.format("Move left backward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
@@ -356,7 +416,23 @@ public class Map extends JPanel{
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
 			String msg = RobotConstants.RIGHT_FORWARD + String.format("%03d", angle);
-	        comm.sendMsg(msg, comm.toSTM);        
+	        comm.sendMsg(msg, comm.toSTM);
+	        
+	        String r = "";
+	        
+	        while (! r.equals("A")) {
+	        	r = comm.recvMsg();
+	        }
+	        
+	        String msgAND = String.format("POS,%d,%d,%c",(int) rd, (int) cd, charDir((int) bot.getDirection()));
+			comm.sendMsg(msgAND, CommMgr.toAndroid);
+			// successfully bit
+			char bAnd = '1';
+			while ( bAnd != '1') {
+				String rcvMsg = comm.recvMsg();
+				bAnd = rcvMsg.charAt(rcvMsg.length()-1);
+			}
+	        // System.out.println(r);
 		}
 		else {
 			System.out.println(String.format("Move right forward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
@@ -391,7 +467,23 @@ public class Map extends JPanel{
 			// send message to STM
 			CommMgr comm = CommMgr.getCommMgr();
 			String msg = RobotConstants.RIGHT_BACKWARD + String.format("%03d", 90);
-	        comm.sendMsg(msg, comm.toSTM);        
+	        comm.sendMsg(msg, comm.toSTM);
+	        
+	        String r = "";
+	        
+	        while (! r.equals("A")) {
+	        	r = comm.recvMsg();
+	        }
+	        
+	        String msgAND = String.format("POS,%d,%d,%c",(int) rd, (int) cd, charDir((int) bot.getDirection()));
+			comm.sendMsg(msgAND, CommMgr.toAndroid);
+			// successfully bit
+			char bAnd = '1';
+			while ( bAnd != '1') {
+				String rcvMsg = comm.recvMsg();
+				bAnd = rcvMsg.charAt(rcvMsg.length()-1);
+			}
+	        // System.out.println(r);
 		}
 		else {
 			System.out.println(String.format("Move right backward to position (%.1f,%.1f).", bot.getRow(), bot.getCol()));
@@ -801,6 +893,13 @@ public class Map extends JPanel{
 		}
 		
 		return true;
+	}
+	
+	private char charDir(int dir) {
+		if (dir == 0) return 'E';
+		else if (dir == 1 || dir == 90) return 'N';
+		else if (dir == 2 || dir == 180) return 'W';
+		else return 'S';
 	}
     
     public void paintComponent(Graphics g) {

@@ -20,26 +20,18 @@ public class ABC {
 	private static ArrayList<Integer> ar = new ArrayList<Integer>();
 	
 	public static void main (String[] args) {
-		String s = "W10/2.50/1.50/";
-		String[] parts = s.split("/");
-		System.out.println(parts.length);
-		System.out.println(s.substring(1, s.length()-1));
-		ar.add(4);
 		
-		int [] q = {1,2,3};
-		int [] p = {4,5,6};
-		String sss = "111";
-		int[][] a = {{19}};
-		System.out.println(Arrays.toString(a[0]));
-		f1(a);
-		System.out.println(Arrays.toString(a[0]));
+		System.out.println("==================");
+		CommMgr comm = CommMgr.getCommMgr();
+		comm.openConnection();
+		// comm.sendMsg("Test_test ", CommMgr.toAndroid);
+		String msg1 = comm.recvMsg();
+		comm.sendMsg("Receive " + msg1, CommMgr.toRPI);
+		comm.closeConnection();
+		System.out.println("==================");
 		
-	}
-	
-	private static void f1(int[][] s) {
-		int[] ss = {321};
-		s[0] = ss;
-		
+		System.out.println(String.format("%04d ---", 9));
+		System.out.println(Integer.parseInt("00900"));
 	}
 	
 	public static void heaps(int[] a, int size) {

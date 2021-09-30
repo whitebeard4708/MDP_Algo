@@ -6,7 +6,6 @@ import algo.Node;
 import algo.Storage;
 import maps.Map;
 import maps.MapConstants;
-import maps.Visited;
 import robot.Robot;
 import robot.RobotConstants;
 
@@ -20,7 +19,8 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 
 import static utils.MapDescriptor.loadMapFromDisk;
-import static utils.MapDescriptor.convertCharToIntDirection;
+import static utils.MapDescriptor.loadMapFromAndroid;
+import static utils.MapDescriptor.convertStringToIntDirection;
 
 /**
  * Simulator for robot navigation in virtual arena.
@@ -45,7 +45,8 @@ public class Simulator {
      * Initialize the different maps and displays the application.
      */
     public static void main(String[] args) {
-    	bot = new Robot(1.5, 1.5, false);
+    	bot = new Robot(13.5, 10.5, false);
+    	bot.setDirection(-90);
     	map = new Map(bot);
         displayEverything();
     }
@@ -181,6 +182,27 @@ public class Simulator {
         });
         _buttons.add(btn_CellsToArrive);
         
+        // FastestPath Class for Multithreading
+        class HamiltonPathSim extends SwingWorker<Integer, String> {
+            protected Integer doInBackground() throws Exception {
+                bot.setRobotPos(RobotConstants.START_ROW, RobotConstants.START_COL);
+                map.repaint();
+
+                if (bot.getRealBot()) {
+                    while (true) {
+                        System.out.println("Waiting for HP_START...");
+                        String msg = comm.recvMsg();
+                        if (msg.equals(CommMgr.HP_START)) break;
+                    }
+                }
+                
+                HamiltonPath hp = new HamiltonPath(map, bot);
+                hp.runHamiltonPath();
+
+                return 111;
+            }
+        }
+        
         // Hamiltonian Path
         JButton btn_HamiltonianPath = new JButton("Hamiltonian path");
         formatButton(btn_HamiltonianPath);
@@ -189,8 +211,8 @@ public class Simulator {
             	
             	// map.repaint();
                 System.out.println("Hamiltonian path started");
-                HamiltonPath hp = new HamiltonPath(map, bot);
-                hp.runHamiltonPath();
+                new HamiltonPathSim().execute();
+                System.out.println("Hamiltonian path ended");
             }
         });
         _buttons.add(btn_HamiltonianPath);
@@ -229,31 +251,17 @@ public class Simulator {
             	
             	CardLayout cl = ((CardLayout) _mapCards.getLayout());
                 cl.show(_mapCards, "REAL_MAP");
+    
+            	// Node n1 = new Node(1,1,90);
+            	// Node n2 = new Node(10,2,90);
+            	// move(n5, n6);
+            	// checkList();
+            	// move(n1, n2);
+            	// move(n3, n4);
+                new FastestPathSim().execute();
+                // checkList();
             	
-            	new FastestPathSim().execute();
-            	
-            	/*
-            	FastestPath fp = new FastestPath(map, bot);
-            	fp.runFastestPath();
-            	 */
-            	
-            	/*
-            	Node start = new Node(5,7,0);
-            	Node end = new Node(7,17,-90);
-            	Node n1 = fp.ASTAR(start, end);
-            	Stack<String> ss1 = fp.printPath(n1);
-            	String s1 = fp.shortenPath(ss1);
-            	System.out.println(s1);
-            	System.out.println(fp.reversePath(s1));
-            	
-            	System.out.println("From end to start");
-            	
-            	Node n2 = fp.ASTAR(end, start);
-            	Stack<String> ss2 = fp.printPath(n2);
-            	String s2 = fp.shortenPath(ss2);
-            	System.out.println(s2);
-            	System.out.println(fp.reversePath(s2));
-            	*/
+            	map.repaint();
             	System.out.println("Fastest path end");
             }
         });
@@ -265,19 +273,18 @@ public class Simulator {
         btn_ConnectRPI.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
             	int a = comm.openConnection();
+            	comm.recvMsg();
             	if (a==1) {	// can connect
             		bot.setRealBot(true);
             		// receive obstacles from Android
-            		for (int i=0; i<MapConstants.NUM_OBSTACLE; i++) {
-            			String coor = comm.recvMsg().split("|")[2];	// row,col
-            			char side = comm.recvMsg().split("|")[2].charAt(0);	// image_side
-            			String[] parts = coor.split(",");
-            			int r = Integer.parseInt(parts[0]);
-            			int c = Integer.parseInt(parts[1]);
-            			int image_side = convertCharToIntDirection(side);
-            			map.addNewImage(r, c, image_side);
-            		}
-            		
+            		// comm.sendMsg("test_test", comm.toAndroid);
+            		// comm.closeConnection();
+            		loadMapFromDisk(map, "newmap1");
+            		// String aaaa = comm.recvMsg();
+            		CardLayout cl = ((CardLayout) _mapCards.getLayout());
+                    cl.show(_mapCards, "REAL_MAP");
+                    map.repaint();
+            		// loadMapFromAndroid(map, bot);
             	}
             }
         });
@@ -463,4 +470,106 @@ public class Simulator {
         });
         _buttons.add(btn_RightBackward);
     }
+    
+    
+    public static void move(Node start, Node goal) {
+    	System.out.println(String.format("Robot starts at (%.1f,%.1f,%d)", start.row+.5, start.col+.5, start.direction));
+    	Node nn1 = storage.ASTAR(start, goal);
+    	System.out.println(nn1.row + "," + nn1.col + "," + nn1.direction);
+    	Stack<String> ss1 = storage.printPath(nn1);
+    	String path1 = storage.shortenPath(ss1);
+    	System.out.println(path1);
+    	String[] steps = path1.split("/");
+	
+		// execute path
+		for (String step: steps) {
+			try {
+				Thread.sleep(500);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			if (bot.getRealBot()) {
+				/*
+				if (step.equals("s050")) comm.sendMsg("s060", CommMgr.toSTM);
+				else comm.sendMsg(step, CommMgr.toSTM);
+				*/
+				comm.sendMsg(step, CommMgr.toSTM);
+				// successfully bit
+				char b = '1';
+				while ( b != 'A') {
+					String rcvMsg = comm.recvMsg();
+					b = rcvMsg.charAt(0);
+				}
+			}
+			// get new position after step
+			double[] new_pos = bot.posAfterMove(step);
+			System.out.println(step + ": " + Arrays.toString(new_pos));
+			bot.setRobotPos(new_pos[0], new_pos[1]);
+			bot.setDirection((int) new_pos[2]);
+			
+			map.repaint();
+			
+			// send to Android
+			if (bot.getRealBot()) {
+				String msg = String.format("POS,%d,%d,%c",(int) new_pos[0], (int) new_pos[1], charDir((int)new_pos[2]));
+				comm.sendMsg(msg, CommMgr.toAndroid);
+				// successfully bit
+				char bAnd = '1';
+				while ( bAnd != '1') {
+					String rcvMsg = comm.recvMsg();
+					bAnd = rcvMsg.charAt(rcvMsg.length()-1);
+				}
+			}
+		}
+		System.out.println(String.format("Robot reaches (%.1f,%.1f,%d)", goal.row+.5, goal.col+.5, goal.direction));
+		System.out.println("===========================");
+    }
+    
+    public static int takePic() {
+    	int a = 0;
+    	String image_id = MapConstants.BULL_EYE;
+    	if (bot.getRealBot()) {
+			comm.sendMsg("TP", CommMgr.toRPI);
+			String rcvMsg = comm.recvMsg();			// receive message should be TP+image_id
+			image_id = rcvMsg.substring(2);
+			// image_id = ".";
+			if (!image_id.equals(MapConstants.BULL_EYE)) {
+				a = 1;
+			}
+		}
+    	return a;
+    }
+    
+    public static void checkList() {
+    	// on specific map: newmap1
+    	// set bot position to (13.5,10.5,-90)
+    	// loadMapFromDisk(map, "newmap1");
+    	// comm.recvMsg();
+    	bot.setRobotPos(13.5, 10.5);
+    	bot.setDirection(-90);
+    	map.repaint();
+    	int a = 0;
+    	
+    	// 4 nodes
+    	Node[] nodes = new Node[4];
+    	nodes[0] = new Node(13,10,-90);
+    	nodes[1] = new Node(10,13,180);
+    	nodes[2] = new Node(7,10,90);
+    	nodes[3] = new Node(10,7,0);
+    	a = takePic();
+    	int index = 0;
+    	while (a != 1 && index < 3) {
+    		move(nodes[index], nodes[index+1]);
+    		a = takePic();
+    		index ++;
+    	}
+    	System.out.println("Image found");
+    }
+    
+    private static char charDir(int dir) {
+		if (dir == 0) return 'E';
+		else if (dir == 1 || dir == 90) return 'N';
+		else if (dir == 2 || dir == 180) return 'W';
+		else return 'S';
+	} 
 }

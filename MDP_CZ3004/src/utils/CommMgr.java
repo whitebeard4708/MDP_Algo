@@ -10,7 +10,9 @@ public class CommMgr {
 	public static final String toSTM = "ALG|STM|";
 	public static final String toAndroid = "ALG|AND|";
 	public static final String toRPI = "ALG|RPI|";
-	public static final String FP_START = "FP_START";
+	public static final String FP_START = "START";
+	public static final String ADD = "ADD";
+	public static final String FACE = "FACE";
 	public static final String HP_START = "HP_START";
 	
 	
@@ -32,10 +34,11 @@ public class CommMgr {
 
     public int openConnection() {
         System.out.println("Opening connection...");
-
+        if (conn != null) return 1; 
         try {
-            String HOST = "192.168.3.3";//18.18
-            int PORT = 4957;//5454
+            String HOST = "192.168.7.7";//18.18
+            int PORT = 5006 ;//5454
+            
             conn = new Socket(HOST, PORT);
 
             writer = new BufferedWriter(new OutputStreamWriter(new BufferedOutputStream(conn.getOutputStream())));
@@ -86,10 +89,10 @@ public class CommMgr {
         try {
             String outputMsg = "";
             if (msg == null) {
-                outputMsg =  destination + "#|\n";												 
+                outputMsg =  destination + "#\n";												 
             } 
             else {
-                outputMsg = destination + "|" + msg + "#\n";													
+                outputMsg = destination + msg + "#\n";													
             }
 
             System.out.println("Sending out message:\n" + outputMsg);
@@ -116,9 +119,9 @@ public class CommMgr {
                 sb.append(input);
                 String s= sb.toString();
                 // parts: SOURCE | DESTINATION | MESSAGE
-                String[] parts = s.split("|");
-                System.out.println(String.format("Message from %s %s ", parts[0], parts[2]));
-                return parts[2];
+                //String[] parts = s.split("|");
+                System.out.println("Msg: " + s);
+                return s;
             }
         } catch (IOException e) {
             System.out.println("recvMsg() --> IOException");

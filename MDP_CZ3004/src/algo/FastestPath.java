@@ -44,7 +44,7 @@ public class FastestPath {
 			// execute path
 			for (String step: steps) {
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(2000);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -52,9 +52,9 @@ public class FastestPath {
 					CommMgr.getCommMgr().sendMsg(step, CommMgr.toSTM);
 					// successfully bit
 					char b = '-';
-					while ( b != '1') {
+					while ( b != 'A') {
 						String rcvMsg = CommMgr.getCommMgr().recvMsg();
-						b = rcvMsg.charAt(rcvMsg.length());
+						b = rcvMsg.charAt(rcvMsg.length()-1);
 					}
 				}
 				// get new position after step
@@ -64,6 +64,18 @@ public class FastestPath {
 				bot.setDirection((int) new_pos[2]);
 				
 				map.repaint();
+				
+				// send new position of robot to ANDROID
+				if (bot.getRealBot()) {
+					String msg = String.format("POS,%d,%d,%c",(int) new_pos[0], (int) new_pos[1], charDir((int)new_pos[2]));
+					CommMgr.getCommMgr().sendMsg(step, CommMgr.toAndroid);
+					// successfully bit
+					char bAnd = '1';
+					while ( bAnd != '1') {
+						String rcvMsg = CommMgr.getCommMgr().recvMsg();
+						bAnd = rcvMsg.charAt(rcvMsg.length()-1);
+					}
+				}
 			}
 			// take picture
 			if (bot.getRealBot()) {
@@ -71,7 +83,7 @@ public class FastestPath {
 				char b = '-';
 				while ( b != '1') {
 					String rcvMsg = CommMgr.getCommMgr().recvMsg();
-					b = rcvMsg.charAt(rcvMsg.length());
+					b = rcvMsg.charAt(rcvMsg.length()-1);
 				}
 			}
 		}
